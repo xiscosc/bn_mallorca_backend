@@ -1,0 +1,41 @@
+{
+  "extends": ["airbnb-base", "airbnb-typescript/base", "plugin:prettier/recommended"],
+  "plugins": ["unicorn"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "unicorn/filename-case": [
+      "error",
+      {
+        "case": "kebabCase"
+      }
+    ],
+    "prettier/prettier": "off",
+    "@typescript-eslint/return-await": ["error", "always"],
+    "@typescript-eslint/lines-between-class-members": "off",
+    "import/order": [
+      "error",
+      {
+        "groups": [["builtin", "external", "internal"]],
+        "alphabetize": {
+          "order": "asc"
+        }
+      }
+    ],
+    "import/prefer-default-export": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "no-underscore-dangle": "off"
+  },
+  "overrides": [
+    {
+      "files": ["cdk/**/*", "test/**/*"],
+      "rules": {
+        "no-new": "off",
+        "func-names": "off",
+        "import/no-extraneous-dependencies": "off",
+        "import/no-internal-modules": "off"
+      }
+    }
+  ]
+}

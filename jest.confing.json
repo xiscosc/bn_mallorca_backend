@@ -1,0 +1,19 @@
+{
+  "transform": {
+    "^.+\\\\.tsx?$": [
+      "ts-jest",
+      {
+        "tsconfig": "tsconfig.json"
+      }
+    ]
+  },
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "roots": ["src"],
+  "maxConcurrency": 1,
+  "collectCoverage": true,
+  "resetMocks": true,
+  "collectCoverageFrom": ["**/*.ts", "!./src/sentry-handler.ts"],
+  "coverageDirectory": "dist/jest.out",
+  "coverageReporters": ["json", "lcov", "text", "clover", "cobertura"]
+}

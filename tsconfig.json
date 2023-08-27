@@ -1,0 +1,11 @@
+{
+  "extends": "@tsconfig/node18-strictest/tsconfig.json",
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": false,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "include": ["lib/**/*", "bin/**/*", "test/**/*", "src/**/*"],
+  "exclude": ["node_modules", "cdk.out"]
+}
