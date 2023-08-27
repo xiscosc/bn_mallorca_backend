@@ -1,9 +1,10 @@
 import { Duration, Stack, StackProps } from 'aws-cdk-lib'
-import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway'
+import { AuthorizationType, LambdaIntegration, RestApi, TokenAuthorizer } from 'aws-cdk-lib/aws-apigateway'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager'
 import { Topic } from 'aws-cdk-lib/aws-sns'
 import { Construct } from 'constructs'
 
@@ -51,6 +52,23 @@ export class BnMallorcaStack extends Stack {
     /**
      *  Lambda functions
      */
+    const authorizerLambda = new NodejsFunction(this, `${this.props.envName}-authorizerLambda`, {
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 256,
+      functionName: `${this.props.envName}-authorizerLambda`,
+      entry: `${LAMBDA_DIR}authorizer.lambda.ts`,
+      timeout: Duration.seconds(10),
+      environment: {
+        JWT_SECRET_ARN: this.props.jwtSecretArn,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    })
+
     const processNewTrackLambda = new NodejsFunction(this, `${this.props.envName}-processNewTrackLambda`, {
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
@@ -113,21 +131,35 @@ export class BnMallorcaStack extends Stack {
       restApiName: 'TrackList API',
     })
 
+    const authorizer = new TokenAuthorizer(this, `${this.props.envName}-apiAuthorizer`, {
+      handler: authorizerLambda,
+      identitySource: 'method.request.header.Authorization',
+    })
+
     const getTrackListIntegration = new LambdaIntegration(getTackListLambda)
     const postTrackIntegration = new LambdaIntegration(receiveNewTrackLambda)
     const trackListResource = api.root.addResource('api').addResource('v1').addResource('tracklist')
     trackListResource.addMethod('GET', getTrackListIntegration)
-    trackListResource.addMethod('POST', postTrackIntegration)
+    trackListResource.addMethod('POST', postTrackIntegration, {
+      authorizationType: AuthorizationType.CUSTOM,
+      authorizer,
+    })
+
+    /**
+     * Secrets Manager
+     */
+    const jwtSecret = Secret.fromSecretCompleteArn(this, `${this.props.envName}-jwt-secret`, this.props.jwtSecretArn)
 
     /**
      *  Permissions
      */
-    receiveNewTrackLambda.grantInvoke(receiveNewTrackLambda)
+    processNewTrackLambda.grantInvoke(receiveNewTrackLambda)
     trackListTable.grantWriteData(processNewTrackLambda)
     artWorkTable.grantReadWriteData(processNewTrackLambda)
     artWorkBucket.grantReadWrite(processNewTrackLambda)
     notificationsTopic.grantPublish(processNewTrackLambda)
     artWorkBucket.grantRead(getTackListLambda)
     trackListTable.grantReadData(getTackListLambda)
+    jwtSecret.grantRead(authorizerLambda)
   }
 }
