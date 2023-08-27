@@ -12,10 +12,11 @@
     "prepare": "husky install",
     "lint:check": "eslint .",
     "lint:fix": "eslint --fix .",
-    "format:check": "prettier --check --loglevel warn .",
-    "format:fix": "prettier --write --loglevel warn ."
+    "format:check": "prettier --check --log-level warn .",
+    "format:fix": "prettier --write --log-level warn ."
   },
   "devDependencies": {
+    "@types/aws-lambda": "8.10.119",
     "@tsconfig/node18": "18.2.1",
     "@tsconfig/strictest": "2.0.1",
     "@types/jest": "29.5.4",

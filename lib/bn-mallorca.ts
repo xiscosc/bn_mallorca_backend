@@ -5,7 +5,10 @@ export class BnMallorcaApp extends App {
   constructor() {
     super()
 
-    const props = {}
+    const props = {
+      envName: '',
+      jwtSecretArn: '',
+    }
     // eslint-disable-next-line no-new
     new BnMallorcaStack(this, '', props)
   }
