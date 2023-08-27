@@ -34,22 +34,76 @@
                             "application/json": {
                                 "examples": {
                                     "example1": {
-                                        "value": [{
-                                            "id": "8f64862595677af8a7d1ae58dfc50d7ff382f427",
-                                            "name": "Ani Kuni",
-                                            "artist": "Polo & Pan",
-                                            "timestamp": 1693144600,
-                                            "albumArt": [
-                                                {
-                                                    "size": "640x640",
-                                                    "downloadUrl": "https://i.scdn.co/image/ab67616d0000b273aaf57ed3bbc2e6df325c1cd2"
-                                                }
-                                            ]
-                                        }]
+                                        "value": [
+                                            {
+                                                "id": "8f64862595677af8a7d1ae58dfc50d7ff382f427",
+                                                "name": "Ani Kuni",
+                                                "artist": "Polo & Pan",
+                                                "timestamp": 1693144600,
+                                                "albumArt": [
+                                                    {
+                                                        "size": "640x640",
+                                                        "downloadUrl": "https://i.scdn.co/image/ab67616d0000b273aaf57ed3bbc2e6df325c1cd2"
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     }
                                 },
                                 "schema": {
                                     "$ref": "#/components/schemas/Tracks"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "tracklist"
+                ],
+                "summary": "Add a track to the tracklist",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "JWT token for authentication",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bearer YOUR_JWT_TOKEN_HERE"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Track"
+                            },
+                            "example": {
+                                "name": "Ani Kuni",
+                                "artist": "Polo & Pan"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "The track was added",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "status": "added"
                                 }
                             }
                         }
@@ -70,10 +124,8 @@
             "Track": {
                 "type": "object",
                 "required": [
-                    "id",
                     "name",
-                    "artist",
-                    "timestamp"
+                    "artist"
                 ],
                 "properties": {
                     "id": {
