@@ -1,0 +1,133 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "version": "0.0.1-alpha",
+        "title": "BN Mallorca"
+    },
+    "paths": {
+        "/api/v1/tracklist": {
+            "get": {
+                "summary": "Get the radio recent tracklist",
+                "description": "Returns a list of all tracklist played at the radio station ordered by the most recent track",
+                "operationId": "getTracklist",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "How many items to return at one time (max 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "default": 5,
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "tags": [
+                    "tracklist"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A paged array of tracks",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "example1": {
+                                        "value": [{
+                                            "id": "8f64862595677af8a7d1ae58dfc50d7ff382f427",
+                                            "name": "Ani Kuni",
+                                            "artist": "Polo & Pan",
+                                            "timestamp": 1693144600,
+                                            "albumArt": [
+                                                {
+                                                    "size": "640x640",
+                                                    "downloadUrl": "https://i.scdn.co/image/ab67616d0000b273aaf57ed3bbc2e6df325c1cd2"
+                                                }
+                                            ]
+                                        }]
+                                    }
+                                },
+                                "schema": {
+                                    "$ref": "#/components/schemas/Tracks"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Tracks": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                    "$ref": "#/components/schemas/Track"
+                }
+            },
+            "Track": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "artist",
+                    "timestamp"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "artist": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "albumArt": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AlbumArt"
+                        }
+                    }
+                }
+            },
+            "AlbumArt": {
+                "type": "object",
+                "required": [
+                    "size",
+                    "downloadUrl"
+                ],
+                "properties": {
+                    "size": {
+                        "type": "string"
+                    },
+                    "downloadUrl": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Error": {
+                "type": "object",
+                "required": [
+                    "code",
+                    "message"
+                ],
+                "properties": {
+                    "code": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
