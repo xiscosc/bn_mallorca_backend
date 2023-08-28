@@ -14,7 +14,7 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
   }
 
   const lambdaClient = new LambdaClient({})
-  await lambdaClient.send(new InvokeCommand({ FunctionName: process.env['PROCESS_LAMBDA_ARN'] }))
+  await lambdaClient.send(new InvokeCommand({ FunctionName: process.env['PROCESS_LAMBDA_ARN'], Payload: track }))
   return {
     statusCode: 200,
     body: JSON.stringify({ message: 'Track recorded for processing' }),
