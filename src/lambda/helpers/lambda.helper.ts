@@ -12,7 +12,7 @@ export function internalServerError(message: object): ProxyResult {
   return getResponse(500, message)
 }
 
-export function okRequest(message: object): ProxyResult {
+export function ok(message: object): ProxyResult {
   return getResponse(200, message)
 }
 

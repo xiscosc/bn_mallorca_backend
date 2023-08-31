@@ -1,7 +1,7 @@
 import { InvokeCommand, LambdaClient, InvokeCommandInput } from '@aws-sdk/client-lambda'
 import { ProxyResult, APIGatewayEvent } from 'aws-lambda'
 import * as log from 'lambda-log'
-import { badRequest, internalServerError, okRequest, stringIsValid } from './helpers/lambda.helper'
+import { badRequest, internalServerError, ok, stringIsValid } from './helpers/lambda.helper'
 import { Track } from '../types/components'
 
 export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
@@ -18,7 +18,7 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
     const lambdaClient = new LambdaClient({})
     const invokeParams: InvokeCommandInput = { FunctionName: process.env['PROCESS_LAMBDA_ARN'], Payload: track }
     await lambdaClient.send(new InvokeCommand(invokeParams))
-    return okRequest({ message: 'Track recorded for processing' })
+    return ok({ message: 'Track recorded for processing' })
   } catch (err: any) {
     log.error(`Error processing Track: ${err.toString()} - ${JSON.stringify(track)}`)
     return internalServerError({ message: 'Error processing track' })
