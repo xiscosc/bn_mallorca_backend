@@ -1,22 +1,26 @@
-import { InvokeCommand, LambdaClient } from '@aws-sdk/client-lambda'
+import { InvokeCommand, LambdaClient, InvokeCommandInput } from '@aws-sdk/client-lambda'
 import { ProxyResult, APIGatewayEvent } from 'aws-lambda'
-import { getBadRequest, stringIsValid } from './helpers'
+import * as log from 'lambda-log'
+import { badRequest, internalServerError, okRequest, stringIsValid } from './helpers/lambda.helper'
 import { Track } from '../types/components'
 
 export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
   if (!stringIsValid(event.body)) {
-    return getBadRequest({ message: 'Body can not be empty' })
+    return badRequest({ message: 'Body can not be empty' })
   }
 
   const track: Track = JSON.parse(event.body!!)
   if (!stringIsValid(track.artist) || !stringIsValid(track.name)) {
-    return getBadRequest({ message: 'Track info is not valid' })
+    return badRequest({ message: 'Track info is not valid' })
   }
 
-  const lambdaClient = new LambdaClient({})
-  await lambdaClient.send(new InvokeCommand({ FunctionName: process.env['PROCESS_LAMBDA_ARN'], Payload: track }))
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: 'Track recorded for processing' }),
+  try {
+    const lambdaClient = new LambdaClient({})
+    const invokeParams: InvokeCommandInput = { FunctionName: process.env['PROCESS_LAMBDA_ARN'], Payload: track }
+    await lambdaClient.send(new InvokeCommand(invokeParams))
+    return okRequest({ message: 'Track recorded for processing' })
+  } catch (err: any) {
+    log.error(`Error processing Track: ${err.toString()} - ${JSON.stringify(track)}`)
+    return internalServerError({ message: 'Error processing track' })
   }
 }
