@@ -66,7 +66,7 @@ test('when track is correct, it triggers the processing lambda', async () => {
   expect(response.statusCode).toBe(200)
 })
 
-test('when track is correct but it can trigger the lambda it returns a 500', async () => {
+test('when track is correct but it can not trigger the lambda, it returns a 500', async () => {
   // @ts-ignore
   when(LambdaClient.prototype.send).mockRejectedValue(new Error('error with aws'))
   const track: Track = { name: 'Test1', artist: 'ATest 1' }
