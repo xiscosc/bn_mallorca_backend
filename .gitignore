@@ -8,3 +8,4 @@ node_modules
 cdk.out
 .idea
 src/generated/*.ts
+dist
