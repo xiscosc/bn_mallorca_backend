@@ -18,8 +18,9 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "maximum": 100,
-              "default": 5,
+              "maximum": 25,
+              "minimum": 1,
+              "default": 1,
               "format": "int32"
             }
           }
@@ -27,29 +28,32 @@
         "tags": ["tracklist"],
         "responses": {
           "200": {
-            "description": "A paged array of tracks",
+            "description": "A array of tracks",
             "content": {
               "application/json": {
                 "examples": {
                   "example1": {
-                    "value": [
-                      {
-                        "id": "8f64862595677af8a7d1ae58dfc50d7ff382f427",
-                        "name": "Ani Kuni",
-                        "artist": "Polo & Pan",
-                        "timestamp": 1693144600,
-                        "albumArt": [
-                          {
-                            "size": "640x640",
-                            "downloadUrl": "https://i.scdn.co/image/ab67616d0000b273aaf57ed3bbc2e6df325c1cd2"
-                          }
-                        ]
-                      }
-                    ]
+                    "value": {
+                      "tracks": [
+                        {
+                          "id": "8f64862595677af8a7d1ae58dfc50d7ff382f427",
+                          "name": "Ani Kuni",
+                          "artist": "Polo & Pan",
+                          "timestamp": 1693144600,
+                          "albumArt": [
+                            {
+                              "size": "640x640",
+                              "downloadUrl": "https://i.scdn.co/image/ab67616d0000b273aaf57ed3bbc2e6df325c1cd2"
+                            }
+                          ]
+                        }
+                      ],
+                      "count": 1
+                    }
                   }
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/Tracks"
+                  "$ref": "#/components/schemas/TrackListResponse"
                 }
               }
             }
@@ -110,6 +114,19 @@
   },
   "components": {
     "schemas": {
+      "TrackListResponse": {
+        "type": "object",
+        "required": ["tracks", "count"],
+        "properties": {
+          "tracks": {
+            "$ref": "#/components/schemas/Tracks"
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "Tracks": {
         "type": "array",
         "maxItems": 100,

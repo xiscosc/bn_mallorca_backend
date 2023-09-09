@@ -13,7 +13,6 @@
   "maxConcurrency": 1,
   "collectCoverage": true,
   "resetMocks": true,
-  "testPathIgnorePatterns": ["<rootDir>/src/repository/*"],
   "collectCoverageFrom": ["**/*.ts"],
   "coverageDirectory": "dist/jest.out",
   "coverageReporters": ["json", "lcov", "text", "clover", "cobertura"]

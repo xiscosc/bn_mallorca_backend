@@ -5,6 +5,6 @@ export const env = {
   processLambdaArn: process.env['PROCESS_LAMBDA_ARN'] ?? '',
   cacheLambdaArn: process.env['CACHE_LAMBDA_ARN'] ?? '',
   notificationTopicArn: process.env['NOTIFICATION_TOPIC'] ?? '',
-  spotifyClientIdArn: process.env['SPOTIFY_CLIENT_ID_ARN'] ?? '',
-  spotifySecretIdArn: process.env['SPOTIFY_SECRET_ID_ARN'] ?? '',
+  spotifyClientIdArn: process.env['SPOTIFY_CLIENT_ID'] ?? '',
+  spotifySecretIdArn: process.env['SPOTIFY_SECRET_ID'] ?? '',
 }

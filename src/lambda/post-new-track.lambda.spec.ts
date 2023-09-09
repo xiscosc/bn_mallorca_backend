@@ -1,6 +1,6 @@
 import { APIGatewayEvent } from 'aws-lambda'
 import { when } from 'jest-when'
-import { handler } from './receive-new-track.lambda'
+import { handler } from './post-new-track.lambda'
 import { requestContext } from '../helpers/test.helper'
 import { TrackService } from '../service/track.service'
 import { Track } from '../types/components'

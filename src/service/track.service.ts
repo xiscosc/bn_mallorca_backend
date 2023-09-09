@@ -7,7 +7,8 @@ import { publishToSns } from '../net/sns'
 import { getAlbumArtFromSpotify } from '../net/spotify'
 import { AlbumArtRepository } from '../repository/album-art.repository'
 import { TrackListRepository } from '../repository/track-list.repository'
-import { AlbumArt, AlbumArtDto, Track, TrackDto } from '../types/components'
+import { AlbumArt, Track, TrackList } from '../types/components'
+import { AlbumArtDto, TrackDto } from '../types/components.dto'
 
 export class TrackService {
   private albumArtRepository: AlbumArtRepository
@@ -45,6 +46,15 @@ export class TrackService {
     return processedTrack
   }
 
+  public async getTrackList(limit: number): Promise<TrackList> {
+    if (limit <= 0 || limit > 25) {
+      throw Error('Limit is not between 1 and 25')
+    }
+
+    const tracksDto = await this.trackListRepository.getLastTracks(limit)
+    return await Promise.all(tracksDto.map(t => this.trackDtoToModel(t)))
+  }
+
   public async cacheAlbumArt(spotifyAlbumArt: AlbumArt[], trackId: string) {
     if (spotifyAlbumArt.length === 0) {
       return
@@ -65,6 +75,27 @@ export class TrackService {
     await this.albumArtRepository.addAlbumArt({ id: trackId, sizes: storedSizes })
   }
 
+  private async trackDtoToModel(dto: TrackDto): Promise<Track> {
+    const track: Track = {
+      id: dto.id,
+      artist: dto.artist,
+      name: dto.name,
+      timestamp: dto.timestamp,
+      albumArt: [],
+    }
+
+    if (isBNTrack(track)) {
+      return track
+    }
+
+    const albumArtDto = await this.albumArtRepository.getAlbumArt(track.id!!)
+    if (albumArtDto !== undefined) {
+      track.albumArt = await TrackService.transformAlbumArtDtoToModel(albumArtDto)
+    }
+
+    return track
+  }
+
   private static async processSingleAlbumArt(trackId: string, albumArt: AlbumArt): Promise<string | undefined> {
     const buffer = await albumArtUrlToBuffer(albumArt.downloadUrl)
     if (buffer === undefined) return undefined
@@ -79,7 +110,7 @@ export class TrackService {
   private static transformTrackToDto(track: Track): TrackDto {
     return {
       id: track.id!!,
-      radio: 'BNMALLORCA',
+      radio: TrackListRepository.getPartitionKeyValue(),
       timestamp: track.timestamp!!,
       artist: track.artist,
       name: track.name,

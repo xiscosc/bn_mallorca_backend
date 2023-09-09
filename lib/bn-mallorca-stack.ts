@@ -71,6 +71,26 @@ export class BnMallorcaStack extends Stack {
       },
     })
 
+    const cacheAlbumArtLambda = new NodejsFunction(this, `${this.props.envName}-cacheAlbumArtLambda`, {
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 256,
+      functionName: `${this.props.envName}-cacheAlbumArtLambda`,
+      entry: `${LAMBDA_DIR}cache-album-art.lambda.ts`,
+      timeout: Duration.seconds(10),
+      environment: {
+        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
+        ALBUM_ART_TABLE: albumArtTable.tableName,
+        SPOTIFY_CLIENT_ID: this.props.spotifyClientIdArn,
+        SPOTIFY_SECRET_ID: this.props.spotifySecretArn,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    })
+
     const processNewTrackLambda = new NodejsFunction(this, `${this.props.envName}-processNewTrackLambda`, {
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
@@ -84,24 +104,7 @@ export class BnMallorcaStack extends Stack {
         ALBUM_ART_TABLE: albumArtTable.tableName,
         TRACK_LIST_TABLE: trackListTable.tableName,
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,
-      },
-      bundling: {
-        minify: true,
-        sourceMap: true,
-      },
-    })
-
-    const cacheAlbumArtLambda = new NodejsFunction(this, `${this.props.envName}-cacheAlbumArtLambda`, {
-      runtime: Runtime.NODEJS_18_X,
-      architecture: Architecture.ARM_64,
-      handler: 'handler',
-      memorySize: 256,
-      functionName: `${this.props.envName}-cacheAlbumArtLambda`,
-      entry: `${LAMBDA_DIR}cache-album-art.lambda.ts`,
-      timeout: Duration.seconds(10),
-      environment: {
-        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
-        ALBUM_ART_TABLE: albumArtTable.tableName,
+        CACHE_LAMBDA_ARN: cacheAlbumArtLambda.functionArn,
       },
       bundling: {
         minify: true,
@@ -120,6 +123,7 @@ export class BnMallorcaStack extends Stack {
       environment: {
         ALBUM_ART_BUCKET: albumArtBucket.bucketName,
         TRACK_LIST_TABLE: trackListTable.tableName,
+        ALBUM_ART_TABLE: albumArtTable.tableName,
       },
       bundling: {
         minify: true,
@@ -127,13 +131,13 @@ export class BnMallorcaStack extends Stack {
       },
     })
 
-    const receiveNewTrackLambda = new NodejsFunction(this, `${this.props.envName}-receiveNewTrackLambda`, {
+    const postNewTrackLambda = new NodejsFunction(this, `${this.props.envName}-postNewTrackLambda`, {
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
       memorySize: 256,
-      functionName: `${this.props.envName}-receiveNewTrackLambda`,
-      entry: `${LAMBDA_DIR}receive-new-track.lambda.ts`,
+      functionName: `${this.props.envName}-postNewTrackLambda`,
+      entry: `${LAMBDA_DIR}post-new-track.lambda.ts`,
       timeout: Duration.seconds(10),
       environment: {
         PROCESS_LAMBDA_ARN: processNewTrackLambda.functionArn,
@@ -157,7 +161,7 @@ export class BnMallorcaStack extends Stack {
     })
 
     const getTrackListIntegration = new LambdaIntegration(getTackListLambda)
-    const postTrackIntegration = new LambdaIntegration(receiveNewTrackLambda)
+    const postTrackIntegration = new LambdaIntegration(postNewTrackLambda)
     const trackListResource = api.root.addResource('api').addResource('v1').addResource('tracklist')
     trackListResource.addMethod('GET', getTrackListIntegration)
     trackListResource.addMethod('POST', postTrackIntegration, {
@@ -183,16 +187,23 @@ export class BnMallorcaStack extends Stack {
     /**
      *  Permissions
      */
-    processNewTrackLambda.grantInvoke(receiveNewTrackLambda)
+    processNewTrackLambda.grantInvoke(postNewTrackLambda)
+
     cacheAlbumArtLambda.grantInvoke(processNewTrackLambda)
+
     trackListTable.grantWriteData(processNewTrackLambda)
+    trackListTable.grantReadData(getTackListLambda)
+
     albumArtTable.grantWriteData(cacheAlbumArtLambda)
     albumArtTable.grantReadData(processNewTrackLambda)
-    albumArtBucket.grantRead(processNewTrackLambda)
+    albumArtTable.grantReadData(getTackListLambda)
+
     albumArtBucket.grantWrite(cacheAlbumArtLambda)
-    notificationsTopic.grantPublish(processNewTrackLambda)
+    albumArtBucket.grantRead(processNewTrackLambda)
     albumArtBucket.grantRead(getTackListLambda)
-    trackListTable.grantReadData(getTackListLambda)
+
+    notificationsTopic.grantPublish(processNewTrackLambda)
+
     jwtSecret.grantRead(authorizerLambda)
     spotifySecret.grantRead(processNewTrackLambda)
     spotifyClientId.grantRead(processNewTrackLambda)

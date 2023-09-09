@@ -1,7 +1,7 @@
 import { GetCommand, GetCommandInput, PutCommand, PutCommandInput } from '@aws-sdk/lib-dynamodb'
 import { DynamoRepository } from './dynamo-repository'
 import { env } from '../config/env'
-import { AlbumArtDto } from '../types/components'
+import { AlbumArtDto } from '../types/components.dto'
 
 export class AlbumArtRepository extends DynamoRepository {
   constructor() {

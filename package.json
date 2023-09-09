@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest --runInBand",
+    "test": "jest",
     "cdk": "cdk",
     "generate:openapi": "openapi-typescript open-api.v1.json --output ./src/generated/radio.openapi.ts",
     "prepare": "husky install",
@@ -55,7 +55,7 @@
     "@aws-sdk/client-sns": "3.409.0",
     "@aws-sdk/lib-dynamodb": "3.409.0",
     "@spotify/web-api-ts-sdk": "1.1.1",
-    "aws-cdk-lib": "2.94.0",
+    "aws-cdk-lib": "2.95.1",
     "constructs": "10.2.70",
     "lambda-log": "3.1.0",
     "axios": "1.5.0",
