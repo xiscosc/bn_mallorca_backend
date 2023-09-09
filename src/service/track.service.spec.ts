@@ -1,8 +1,8 @@
 import { mock } from 'jest-mock-extended'
 import { when } from 'jest-when'
 import { TrackService } from './track.service'
-import { albumArtUrlToBuffer } from '../helpers/album-art.helper'
 import { getTrackId, getTrackTs, isBNTrack } from '../helpers/track.helper'
+import { albumArtUrlToBuffer } from '../net/album-art.downloader'
 import { triggerAsyncLambda } from '../net/lambda'
 import { getAlbumArtWithSignedUrl, storeAlbumArtInS3 } from '../net/s3'
 import { publishToSns } from '../net/sns'
@@ -13,12 +13,12 @@ import { AlbumArt, Track, TrackDto } from '../types/components'
 
 jest.mock('../repository/album-art.repository')
 jest.mock('../repository/track-list.repository')
-jest.mock('../helpers/album-art.helper')
 jest.mock('../helpers/track.helper')
 jest.mock('../net/s3')
 jest.mock('../net/spotify')
 jest.mock('../net/lambda')
 jest.mock('../net/sns')
+jest.mock('../net/album-art.downloader')
 
 const id = '123456'
 const ts = 123456

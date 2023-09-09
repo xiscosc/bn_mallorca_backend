@@ -1,6 +1,6 @@
 import { env } from '../config/env'
-import { albumArtUrlToBuffer } from '../helpers/album-art.helper'
 import { getTrackId, getTrackTs, isBNTrack } from '../helpers/track.helper'
+import { albumArtUrlToBuffer } from '../net/album-art.downloader'
 import { triggerAsyncLambda } from '../net/lambda'
 import { getAlbumArtWithSignedUrl, storeAlbumArtInS3 } from '../net/s3'
 import { publishToSns } from '../net/sns'
