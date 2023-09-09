@@ -1,6 +1,6 @@
 import { ProxyResult } from 'aws-lambda'
 
-export function stringIsValid(value: string | null): boolean {
+export function stringIsValid(value?: string | null): boolean {
   return !(value === null || value === undefined || value.replace(' ', '').length === 0)
 }
 

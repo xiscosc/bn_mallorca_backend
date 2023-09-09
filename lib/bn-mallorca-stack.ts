@@ -11,6 +11,8 @@ import { Construct } from 'constructs'
 interface BnMallorcaStackProps extends StackProps {
   envName: string
   jwtSecretArn: string
+  spotifyClientIdArn: string
+  spotifySecretArn: string
 }
 
 const LAMBDA_DIR = `${__dirname}/../src/lambda/`
@@ -31,8 +33,8 @@ export class BnMallorcaStack extends Stack {
       partitionKey: { name: 'radio', type: AttributeType.STRING },
     })
 
-    const artWorkTable = new Table(this, `${this.props.envName}-artWorkTable`, {
-      tableName: `${this.props.envName}-artWork`,
+    const albumArtTable = new Table(this, `${this.props.envName}-albumArtTable`, {
+      tableName: `${this.props.envName}-albumArt`,
       billingMode: BillingMode.PAY_PER_REQUEST,
       partitionKey: { name: 'id', type: AttributeType.STRING },
     })
@@ -40,8 +42,8 @@ export class BnMallorcaStack extends Stack {
     /**
      *  S3 Buckets
      */
-    const artWorkBucket = new Bucket(this, `${this.props.envName}-artWorkBucket`, {
-      bucketName: `bn-mallorca-app-${this.props.envName}-artWork`,
+    const albumArtBucket = new Bucket(this, `${this.props.envName}-albumArtBucket`, {
+      bucketName: `bn-mallorca-app-${this.props.envName}-albumArt`,
     })
 
     /**
@@ -78,10 +80,28 @@ export class BnMallorcaStack extends Stack {
       entry: `${LAMBDA_DIR}process-new-track.lambda.ts`,
       timeout: Duration.seconds(10),
       environment: {
-        ARTWORK_BUCKET: artWorkBucket.bucketName,
-        ARTWORK_TABLE: artWorkTable.tableName,
+        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
+        ALBUM_ART_TABLE: albumArtTable.tableName,
         TRACK_LIST_TABLE: trackListTable.tableName,
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    })
+
+    const cacheAlbumArtLambda = new NodejsFunction(this, `${this.props.envName}-cacheAlbumArtLambda`, {
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 256,
+      functionName: `${this.props.envName}-cacheAlbumArtLambda`,
+      entry: `${LAMBDA_DIR}cache-album-art.lambda.ts`,
+      timeout: Duration.seconds(10),
+      environment: {
+        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
+        ALBUM_ART_TABLE: albumArtTable.tableName,
       },
       bundling: {
         minify: true,
@@ -98,7 +118,7 @@ export class BnMallorcaStack extends Stack {
       entry: `${LAMBDA_DIR}get-track-list.lambda.ts`,
       timeout: Duration.seconds(10),
       environment: {
-        ARTWORK_BUCKET: artWorkBucket.bucketName,
+        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
         TRACK_LIST_TABLE: trackListTable.tableName,
       },
       bundling: {
@@ -149,17 +169,32 @@ export class BnMallorcaStack extends Stack {
      * Secrets Manager
      */
     const jwtSecret = Secret.fromSecretCompleteArn(this, `${this.props.envName}-jwt-secret`, this.props.jwtSecretArn)
+    const spotifyClientId = Secret.fromSecretCompleteArn(
+      this,
+      `${this.props.envName}-spotify-client-id`,
+      this.props.spotifyClientIdArn,
+    )
+    const spotifySecret = Secret.fromSecretCompleteArn(
+      this,
+      `${this.props.envName}-spotify-secret`,
+      this.props.spotifySecretArn,
+    )
 
     /**
      *  Permissions
      */
     processNewTrackLambda.grantInvoke(receiveNewTrackLambda)
+    cacheAlbumArtLambda.grantInvoke(processNewTrackLambda)
     trackListTable.grantWriteData(processNewTrackLambda)
-    artWorkTable.grantReadWriteData(processNewTrackLambda)
-    artWorkBucket.grantReadWrite(processNewTrackLambda)
+    albumArtTable.grantWriteData(cacheAlbumArtLambda)
+    albumArtTable.grantReadData(processNewTrackLambda)
+    albumArtBucket.grantRead(processNewTrackLambda)
+    albumArtBucket.grantWrite(cacheAlbumArtLambda)
     notificationsTopic.grantPublish(processNewTrackLambda)
-    artWorkBucket.grantRead(getTackListLambda)
+    albumArtBucket.grantRead(getTackListLambda)
     trackListTable.grantReadData(getTackListLambda)
     jwtSecret.grantRead(authorizerLambda)
+    spotifySecret.grantRead(processNewTrackLambda)
+    spotifyClientId.grantRead(processNewTrackLambda)
   }
 }
