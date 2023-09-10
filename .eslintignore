@@ -4,3 +4,4 @@ cdk.out/
 jest.out/
 jest.config.json
 src/generated
+test.ts

@@ -9,3 +9,4 @@ cdk.out
 .idea
 src/generated/*.ts
 dist
+test.ts

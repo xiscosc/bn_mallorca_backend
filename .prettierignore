@@ -4,3 +4,4 @@ cdk.out/
 jest.out/
 **/*.md
 **/*.yaml
+test.ts

@@ -3,6 +3,7 @@ import { AuthorizationType, LambdaIntegration, RestApi, TokenAuthorizer } from '
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
+import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager'
 import { Topic } from 'aws-cdk-lib/aws-sns'
@@ -58,10 +59,11 @@ export class BnMallorcaStack extends Stack {
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
-      memorySize: 256,
+      memorySize: 128,
       functionName: `${this.props.envName}-authorizerLambda`,
       entry: `${LAMBDA_DIR}api-authorizer.lambda.ts`,
       timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
       environment: {
         JWT_SECRET_ARN: this.props.jwtSecretArn,
       },
@@ -75,15 +77,14 @@ export class BnMallorcaStack extends Stack {
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
-      memorySize: 256,
+      memorySize: 512,
       functionName: `${this.props.envName}-cacheAlbumArtLambda`,
       entry: `${LAMBDA_DIR}cache-album-art.lambda.ts`,
       timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
       environment: {
         ALBUM_ART_BUCKET: albumArtBucket.bucketName,
         ALBUM_ART_TABLE: albumArtTable.tableName,
-        SPOTIFY_CLIENT_ID: this.props.spotifyClientIdArn,
-        SPOTIFY_SECRET_ID: this.props.spotifySecretArn,
       },
       bundling: {
         minify: true,
@@ -99,12 +100,15 @@ export class BnMallorcaStack extends Stack {
       functionName: `${this.props.envName}-processNewTrackLambda`,
       entry: `${LAMBDA_DIR}process-new-track.lambda.ts`,
       timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
       environment: {
         ALBUM_ART_BUCKET: albumArtBucket.bucketName,
         ALBUM_ART_TABLE: albumArtTable.tableName,
         TRACK_LIST_TABLE: trackListTable.tableName,
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,
         CACHE_LAMBDA_ARN: cacheAlbumArtLambda.functionArn,
+        SPOTIFY_CLIENT_ID: this.props.spotifyClientIdArn,
+        SPOTIFY_SECRET_ID: this.props.spotifySecretArn,
       },
       bundling: {
         minify: true,
@@ -120,6 +124,7 @@ export class BnMallorcaStack extends Stack {
       functionName: `${this.props.envName}-getTackListLambda`,
       entry: `${LAMBDA_DIR}get-track-list.lambda.ts`,
       timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
       environment: {
         ALBUM_ART_BUCKET: albumArtBucket.bucketName,
         TRACK_LIST_TABLE: trackListTable.tableName,
@@ -135,10 +140,11 @@ export class BnMallorcaStack extends Stack {
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
-      memorySize: 256,
+      memorySize: 128,
       functionName: `${this.props.envName}-postNewTrackLambda`,
       entry: `${LAMBDA_DIR}post-new-track.lambda.ts`,
       timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
       environment: {
         PROCESS_LAMBDA_ARN: processNewTrackLambda.functionArn,
       },
