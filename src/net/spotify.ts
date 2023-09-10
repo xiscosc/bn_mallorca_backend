@@ -10,7 +10,7 @@ export async function getAlbumArtFromSpotify(track: Track): Promise<AlbumArt[]> 
   try {
     await loadSpotifySecrets()
     const sdk = SpotifyApi.withClientCredentials(spotifyClientId!!, spotifySecret!!)
-    const items = await sdk.search(`${track.name} ${track.artist}`, ['track'])
+    const items = await sdk.search(`${track.name} ${track.artist}`, ['track'], undefined, 1)
     if (items.tracks.items.length === 0) return []
     const spotifyTrack = items.tracks.items[0]!!
     return spotifyTrack.album.images.map(img => ({ downloadUrl: img.url, size: `${img.height}x${img.width}` }))
