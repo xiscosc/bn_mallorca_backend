@@ -32,6 +32,7 @@ export class BnMallorcaStack extends Stack {
       billingMode: BillingMode.PAY_PER_REQUEST,
       sortKey: { name: 'timestamp', type: AttributeType.NUMBER },
       partitionKey: { name: 'radio', type: AttributeType.STRING },
+      timeToLiveAttribute: 'deleteTs',
     })
 
     const albumArtTable = new Table(this, `${this.props.envName}-albumArtTable`, {

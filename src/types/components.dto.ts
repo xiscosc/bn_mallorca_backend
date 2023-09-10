@@ -4,6 +4,7 @@ export type TrackDto = {
   name: string
   artist: string
   timestamp: number
+  deleteTs: number
 }
 
 export type AlbumArtDto = {

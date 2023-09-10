@@ -1,10 +1,11 @@
+import { Track as SpotifyTrack } from '@spotify/web-api-ts-sdk'
 import { env } from '../config/env'
 import { getTrackId, getTrackTs, isBNTrack } from '../helpers/track.helper'
 import { albumArtUrlToBuffer } from '../net/album-art.downloader'
 import { triggerAsyncLambda } from '../net/lambda'
 import { getAlbumArtWithSignedUrl, storeAlbumArtInS3 } from '../net/s3'
 import { publishToSns } from '../net/sns'
-import { getAlbumArtFromSpotify } from '../net/spotify'
+import { getSpotifyResults } from '../net/spotify'
 import { AlbumArtRepository } from '../repository/album-art.repository'
 import { TrackListRepository } from '../repository/track-list.repository'
 import { AlbumArt, Track, TrackList } from '../types/components'
@@ -34,7 +35,7 @@ export class TrackService {
     if (!isBNTrack(processedTrack)) {
       const albumArtDto = await this.albumArtRepository.getAlbumArt(processedTrack.id!!)
       if (albumArtDto === undefined) {
-        processedTrack.albumArt!!.push(...(await getAlbumArtFromSpotify(processedTrack)))
+        processedTrack.albumArt!!.push(...(await TrackService.getAlbumArtFromSpotify(processedTrack)))
         if (processedTrack.albumArt!!.length > 0) await TrackService.triggerAsyncAlbumArtCaching(processedTrack)
       } else {
         processedTrack.albumArt!!.push(...(await TrackService.transformAlbumArtDtoToModel(albumArtDto)))
@@ -96,6 +97,18 @@ export class TrackService {
     return track
   }
 
+  private static async getAlbumArtFromSpotify(track: Track): Promise<AlbumArt[]> {
+    const results = await getSpotifyResults(track.name, track.artist)
+    if (!results) {
+      return []
+    }
+    const spotifyTrack = TrackService.findArtistInSpotifyTracks(results.tracks.items, track.artist)
+    if (!spotifyTrack) {
+      return []
+    }
+    return spotifyTrack.album.images.map(img => ({ downloadUrl: img.url, size: `${img.height}x${img.width}` }))
+  }
+
   private static async processSingleAlbumArt(trackId: string, albumArt: AlbumArt): Promise<string | undefined> {
     const buffer = await albumArtUrlToBuffer(albumArt.downloadUrl)
     if (buffer === undefined) return undefined
@@ -114,10 +127,40 @@ export class TrackService {
       timestamp: track.timestamp!!,
       artist: track.artist,
       name: track.name,
+      deleteTs: track.timestamp!! + 60 * 60 * 24 * 15, // 15 Days
     }
   }
 
   private static async triggerAsyncAlbumArtCaching(track: Track) {
     await triggerAsyncLambda(env.cacheLambdaArn, track)
+  }
+
+  private static findArtistInSpotifyTracks(tracks: SpotifyTrack[], artist: string): SpotifyTrack | undefined {
+    for (let i = 0; i < tracks.length; i += 1) {
+      const track = tracks[i]!!
+      const { artists } = track
+      for (let j = 0; j < artists.length; j += 1) {
+        if (TrackService.areStringsSimilar(artists[j]!!.name, artist)) {
+          return track
+        }
+      }
+    }
+
+    return undefined
+  }
+
+  private static areStringsSimilar(str1: string, str2: string): boolean {
+    // Normalize both strings to remove accent marks and ensure consistent casing
+    const normalizedStr1 = str1
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+    const normalizedStr2 = str2
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+
+    // Compare the normalized strings for similarity
+    return normalizedStr1 === normalizedStr2
   }
 }
