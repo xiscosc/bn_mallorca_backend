@@ -12,7 +12,7 @@ export class BnMallorcaApp extends App {
       spotifySecretArn: BnMallorcaApp.getFromEnv('SPOTIFY_SECRET_ID_ARN'),
     }
     // eslint-disable-next-line no-new
-    new BnMallorcaStack(this, '', props)
+    new BnMallorcaStack(this, `${props.envName}-bnmallorca-stack`, props)
   }
 
   private static getFromEnv(key: string): string {

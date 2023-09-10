@@ -43,7 +43,7 @@ export class BnMallorcaStack extends Stack {
      *  S3 Buckets
      */
     const albumArtBucket = new Bucket(this, `${this.props.envName}-albumArtBucket`, {
-      bucketName: `bn-mallorca-app-${this.props.envName}-albumArt`,
+      bucketName: `${this.props.envName}-bnmca-albums`,
     })
 
     /**
