@@ -60,7 +60,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 256,
       functionName: `${this.props.envName}-authorizerLambda`,
-      entry: `${LAMBDA_DIR}authorizer.lambda.ts`,
+      entry: `${LAMBDA_DIR}api-authorizer.lambda.ts`,
       timeout: Duration.seconds(10),
       environment: {
         JWT_SECRET_ARN: this.props.jwtSecretArn,

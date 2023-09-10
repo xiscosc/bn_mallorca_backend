@@ -7,4 +7,5 @@ export const env = {
   notificationTopicArn: process.env['NOTIFICATION_TOPIC'] ?? '',
   spotifyClientIdArn: process.env['SPOTIFY_CLIENT_ID'] ?? '',
   spotifySecretIdArn: process.env['SPOTIFY_SECRET_ID'] ?? '',
+  jwtSecretArn: process.env['JWT_SECRET_ARN'] ?? '',
 }
