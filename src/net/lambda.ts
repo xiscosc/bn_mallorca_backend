@@ -2,6 +2,10 @@ import { InvokeCommand, InvokeCommandInput, LambdaClient } from '@aws-sdk/client
 
 export async function triggerAsyncLambda(lambdaArn: string, payload: object) {
   const lambdaClient = new LambdaClient({})
-  const invokeParams: InvokeCommandInput = { FunctionName: lambdaArn, Payload: Buffer.from(JSON.stringify(payload)) }
+  const invokeParams: InvokeCommandInput = {
+    FunctionName: lambdaArn,
+    Payload: Buffer.from(JSON.stringify(payload)),
+    InvocationType: 'Event',
+  }
   await lambdaClient.send(new InvokeCommand(invokeParams))
 }
