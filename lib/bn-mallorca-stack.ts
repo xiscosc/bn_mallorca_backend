@@ -77,7 +77,7 @@ export class BnMallorcaStack extends Stack {
       runtime: Runtime.NODEJS_18_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
-      memorySize: 512,
+      memorySize: 256,
       functionName: `${this.props.envName}-cacheAlbumArtLambda`,
       entry: `${LAMBDA_DIR}cache-album-art.lambda.ts`,
       timeout: Duration.seconds(10),
