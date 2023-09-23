@@ -8,6 +8,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
+    "test:ci": "openapi-typescript open-api.v1.json --output ./src/generated/radio.openapi.ts && jest --ci --json --coverage --testLocationInResults --outputFile=report.json",
     "cdk": "cdk",
     "generate:openapi": "openapi-typescript open-api.v1.json --output ./src/generated/radio.openapi.ts",
     "prepare": "husky install",
