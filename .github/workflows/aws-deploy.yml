@@ -1,0 +1,98 @@
+name: aws-deploy
+run-name: Deploy to AWS
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: 'eu-south-2'
+
+jobs:
+  deploy-dev:
+    environment: staging
+    name: Deploy to dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: 'eu-south-2'
+
+      - name: Diff stack
+        run: npm run cdk diff
+        env:
+          ENV_NAME: dev
+          JWT_SECRET_ARN: ${{ secrets.JWT_SECRET_ARN }}
+          SPOTIFY_CLIENT_ID_ARN: ${{ secrets.SPOTIFY_CLIENT_ID_ARN }}
+          SPOTIFY_SECRET_ID_ARN: ${{ secrets.SPOTIFY_SECRET_ID_ARN }}
+
+      - name: Deploy stack
+        run: npx cdk deploy --all --require-approval never
+        env:
+          ENV_NAME: dev
+          JWT_SECRET_ARN: ${{ secrets.JWT_SECRET_ARN }}
+          SPOTIFY_CLIENT_ID_ARN: ${{ secrets.SPOTIFY_CLIENT_ID_ARN }}
+          SPOTIFY_SECRET_ID_ARN: ${{ secrets.SPOTIFY_SECRET_ID_ARN }}
+
+  deploy-prod:
+    name: Deploy to prod
+    environment: prod
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.13.x
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: 'eu-south-2'
+
+      - name: Diff stack
+        run: npx cdk diff
+        env:
+          ENV_NAME: prod
+          JWT_SECRET_ARN: ${{ secrets.JWT_SECRET_ARN }}
+          SPOTIFY_CLIENT_ID_ARN: ${{ secrets.SPOTIFY_CLIENT_ID_ARN }}
+          SPOTIFY_SECRET_ID_ARN: ${{ secrets.SPOTIFY_SECRET_ID_ARN }}
+
+      - name: Deploy stack
+        run: npm run cdk deploy --all --require-approval never
+        env:
+          ENV_NAME: prod
+          JWT_SECRET_ARN: ${{ secrets.JWT_SECRET_ARN }}
+          SPOTIFY_CLIENT_ID_ARN: ${{ secrets.SPOTIFY_CLIENT_ID_ARN }}
+          SPOTIFY_SECRET_ID_ARN: ${{ secrets.SPOTIFY_SECRET_ID_ARN }}

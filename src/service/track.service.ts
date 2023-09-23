@@ -136,11 +136,12 @@ export class TrackService {
   }
 
   private static findArtistInSpotifyTracks(tracks: SpotifyTrack[], artist: string): SpotifyTrack | undefined {
+    const normalizedArtist = TrackService.normalizeString(artist)
     for (let i = 0; i < tracks.length; i += 1) {
       const track = tracks[i]!!
       const { artists } = track
       for (let j = 0; j < artists.length; j += 1) {
-        if (TrackService.artistsAreSimilar(artists[j]!!.name, artist)) {
+        if (TrackService.artistsAreSimilar(TrackService.normalizeString(artists[j]!!.name), normalizedArtist)) {
           return track
         }
       }
@@ -149,10 +150,7 @@ export class TrackService {
     return undefined
   }
 
-  private static artistsAreSimilar(str1: string, str2: string): boolean {
-    // Normalize both strings to remove accent marks and ensure consistent casing
-    const normalizedStr1 = TrackService.normalizeString(str1)
-    const normalizedStr2 = TrackService.normalizeString(str2)
+  private static artistsAreSimilar(normalizedStr1: string, normalizedStr2: string): boolean {
     return (
       normalizedStr1 === normalizedStr2 ||
       normalizedStr1.indexOf(normalizedStr2) >= 0 ||
