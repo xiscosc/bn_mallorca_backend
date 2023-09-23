@@ -141,8 +141,7 @@ export class TrackService {
       const track = tracks[i]!!
       const { artists } = track
       for (let j = 0; j < artists.length; j += 1) {
-        const normalizedCurrentArtist = TrackService.normalizeString(artists[j]!!.name)
-        if (TrackService.artistsAreSimilar(normalizedCurrentArtist, normalizedArtist)) {
+        if (TrackService.artistsAreSimilar(TrackService.normalizeString(artists[j]!!.name), normalizedArtist)) {
           return track
         }
       }
