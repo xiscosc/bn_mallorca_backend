@@ -2,9 +2,10 @@ name: aws-deploy
 run-name: Deploy to AWS
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [coverage]
+    types:
+      - completed
 
 env:
   AWS_REGION: 'eu-south-2'
@@ -26,6 +27,9 @@ jobs:
 
       - name: Install
         run: npm ci
+
+      - name: Generate OpenAPI
+        run: npm run generate:openapi
 
       - name: Build
         run: npm run build
@@ -65,11 +69,14 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.13.x
+          node-version: 18
           cache: npm
 
       - name: Install
         run: npm ci
+
+      - name: Generate OpenAPI
+        run: npm run generate:openapi
 
       - name: Build
         run: npm run build
@@ -82,7 +89,7 @@ jobs:
           aws-region: 'eu-south-2'
 
       - name: Diff stack
-        run: npx cdk diff
+        run: npm run cdk diff
         env:
           ENV_NAME: prod
           JWT_SECRET_ARN: ${{ secrets.JWT_SECRET_ARN }}
