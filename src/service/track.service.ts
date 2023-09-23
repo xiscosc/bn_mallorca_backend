@@ -140,7 +140,7 @@ export class TrackService {
       const track = tracks[i]!!
       const { artists } = track
       for (let j = 0; j < artists.length; j += 1) {
-        if (TrackService.areStringsSimilar(artists[j]!!.name, artist)) {
+        if (TrackService.artistsAreSimilar(artists[j]!!.name, artist)) {
           return track
         }
       }
@@ -149,18 +149,21 @@ export class TrackService {
     return undefined
   }
 
-  private static areStringsSimilar(str1: string, str2: string): boolean {
+  private static artistsAreSimilar(str1: string, str2: string): boolean {
     // Normalize both strings to remove accent marks and ensure consistent casing
-    const normalizedStr1 = str1
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-    const normalizedStr2 = str2
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
+    const normalizedStr1 = TrackService.normalizeString(str1)
+    const normalizedStr2 = TrackService.normalizeString(str2)
+    return (
+      normalizedStr1 === normalizedStr2 ||
+      normalizedStr1.indexOf(normalizedStr2) >= 0 ||
+      normalizedStr2.indexOf(normalizedStr1) >= 0
+    )
+  }
 
-    // Compare the normalized strings for similarity
-    return normalizedStr1 === normalizedStr2
+  private static normalizeString(str1: string): string {
+    return str1
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
   }
 }

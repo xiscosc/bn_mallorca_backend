@@ -249,6 +249,68 @@ test('processed track has no cached album art - obtained from spotify', async ()
   expect(resultTrack).toEqual(fullTrack)
 })
 
+test('processed track has no cached album art - obtained from spotify with a collab', async () => {
+  const spotifyTracksPage = {
+    items: [
+      {
+        album: {
+          album_type: 'album',
+          artists: [
+            {
+              name: "Guns N' Roses & Other artist collab",
+              type: 'artist',
+            },
+          ],
+          available_markets: [],
+          images: [
+            {
+              height: 1,
+              url: `http://${id}/1x1`,
+              width: 1,
+            },
+            {
+              height: 2,
+              url: `http://${id}/2x2`,
+              width: 2,
+            },
+          ],
+          name: 'Appetite For Destruction',
+          type: 'album',
+        },
+        artists: [
+          {
+            name: "Guns N' Roses & Other artist collab",
+            type: 'artist',
+            uri: 'spotify:artist:3qm84nBOXUEQ2vnTfUTTFC',
+          },
+        ],
+        name: "Sweet Child O' Mine",
+      },
+    ],
+  }
+
+  // @ts-ignore
+  const spotifyResults: SearchResults = { tracks: spotifyTracksPage }
+  const spotifyArt = sizes.map(s => getArt(id, s))
+  const fullTrack = getFullTrack(spotifyArt)
+
+  when(isBNTrack).mockReturnValue(false)
+  when(AlbumArtRepository.prototype.getAlbumArt).mockResolvedValue(undefined)
+  when(getSpotifyResults).mockResolvedValue(spotifyResults)
+
+  const resultTrack = await service.processTrack(centovaTrack)
+  expect(AlbumArtRepository.prototype.getAlbumArt).toBeCalledTimes(1)
+  expect(getSpotifyResults).toBeCalledTimes(1)
+  expect(triggerAsyncLambda).toBeCalledTimes(1)
+  expect(triggerAsyncLambda).toBeCalledWith(expect.stringContaining(''), fullTrack)
+  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(0)
+  expect(publishToSns).toBeCalledTimes(1)
+  expect(publishToSns).toBeCalledWith(expect.stringContaining(''), JSON.stringify(fullTrack))
+  expect(TrackListRepository.prototype.putTrack).toBeCalledTimes(1)
+  expect(TrackListRepository.prototype.putTrack).toBeCalledWith(dtoTrack)
+  expect(resultTrack).toEqual(fullTrack)
+})
+
 test('processed track has no cached album art - no results from spotify', async () => {
   when(isBNTrack).mockReturnValue(false)
   when(AlbumArtRepository.prototype.getAlbumArt).mockResolvedValue(undefined)

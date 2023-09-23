@@ -13,7 +13,7 @@
   "maxConcurrency": 1,
   "collectCoverage": true,
   "resetMocks": true,
-  "collectCoverageFrom": ["**/*.ts"],
+  "collectCoverageFrom": ["**/*.ts", "!src/repository/*.ts", "!src/net/*.ts"],
   "coverageDirectory": "dist/jest.out",
   "coverageReporters": ["json", "lcov", "text", "clover", "cobertura"]
 }
