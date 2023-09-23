@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows: [coverage]
-    types:
-      - completed
+    types: [completed]
+    branches: [main]
 
 env:
   AWS_REGION: 'eu-south-2'
