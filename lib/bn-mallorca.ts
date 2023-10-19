@@ -10,6 +10,9 @@ export class BnMallorcaApp extends App {
       jwtSecretArn: BnMallorcaApp.getFromEnv('JWT_SECRET_ARN'),
       spotifyClientIdArn: BnMallorcaApp.getFromEnv('SPOTIFY_CLIENT_ID_ARN'),
       spotifySecretArn: BnMallorcaApp.getFromEnv('SPOTIFY_SECRET_ID_ARN'),
+      apiDomainName: BnMallorcaApp.getFromEnv('API_DOMAIN_NAME'),
+      apiDomainAPIGatewayDomainName: BnMallorcaApp.getFromEnv('API_DOMAIN_GATEWAY_NAME'),
+      apiDomainHostedZoneId: BnMallorcaApp.getFromEnv('API_DOMAIN_HOSTED_ZONE_ID'),
     }
     // eslint-disable-next-line no-new
     new BnMallorcaStack(this, `${props.envName}-bnmallorca-stack`, props)

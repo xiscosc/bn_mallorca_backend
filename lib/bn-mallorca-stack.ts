@@ -1,5 +1,12 @@
 import { Duration, Stack, StackProps } from 'aws-cdk-lib'
-import { AuthorizationType, LambdaIntegration, RestApi, TokenAuthorizer } from 'aws-cdk-lib/aws-apigateway'
+import {
+  AuthorizationType,
+  BasePathMapping,
+  DomainName,
+  LambdaIntegration,
+  RestApi,
+  TokenAuthorizer,
+} from 'aws-cdk-lib/aws-apigateway'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
@@ -14,6 +21,9 @@ interface BnMallorcaStackProps extends StackProps {
   jwtSecretArn: string
   spotifyClientIdArn: string
   spotifySecretArn: string
+  apiDomainName: string
+  apiDomainAPIGatewayDomainName: string
+  apiDomainHostedZoneId: string
 }
 
 const LAMBDA_DIR = `${__dirname}/../src/lambda/`
@@ -160,6 +170,18 @@ export class BnMallorcaStack extends Stack {
      */
     const api = new RestApi(this, `${this.props.envName}-trackListApi`, {
       restApiName: 'TrackList API',
+    })
+
+    const domain = DomainName.fromDomainNameAttributes(this, `${this.props.envName}-apiDomain`, {
+      domainName: this.props.apiDomainName,
+      domainNameAliasHostedZoneId: this.props.apiDomainHostedZoneId,
+      domainNameAliasTarget: this.props.apiDomainAPIGatewayDomainName,
+    })
+
+    // eslint-disable-next-line no-new
+    new BasePathMapping(this, `${this.props.envName}-apiPathMapping`, {
+      domainName: domain,
+      restApi: api,
     })
 
     const authorizer = new TokenAuthorizer(this, `${this.props.envName}-apiAuthorizer`, {
