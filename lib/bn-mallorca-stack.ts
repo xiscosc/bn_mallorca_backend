@@ -3,6 +3,7 @@ import {
   AuthorizationType,
   BasePathMapping,
   DomainName,
+  EndpointType,
   LambdaIntegration,
   RestApi,
   TokenAuthorizer,
@@ -170,18 +171,15 @@ export class BnMallorcaStack extends Stack {
      */
     const api = new RestApi(this, `${this.props.envName}-trackListApi`, {
       restApiName: 'TrackList API',
+      endpointConfiguration: {
+        types: [EndpointType.REGIONAL],
+      },
     })
 
     const domain = DomainName.fromDomainNameAttributes(this, `${this.props.envName}-apiDomain`, {
       domainName: this.props.apiDomainName,
       domainNameAliasHostedZoneId: this.props.apiDomainHostedZoneId,
       domainNameAliasTarget: this.props.apiDomainAPIGatewayDomainName,
-    })
-
-    // eslint-disable-next-line no-new
-    new BasePathMapping(this, `${this.props.envName}-apiPathMapping`, {
-      domainName: domain,
-      restApi: api,
     })
 
     const authorizer = new TokenAuthorizer(this, `${this.props.envName}-apiAuthorizer`, {
@@ -196,6 +194,13 @@ export class BnMallorcaStack extends Stack {
     trackListResource.addMethod('POST', postTrackIntegration, {
       authorizationType: AuthorizationType.CUSTOM,
       authorizer,
+    })
+
+    // eslint-disable-next-line no-new
+    new BasePathMapping(this, `${this.props.envName}-apiPathMapping`, {
+      domainName: domain,
+      restApi: api,
+      stage: api.deploymentStage,
     })
 
     /**
