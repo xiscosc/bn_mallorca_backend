@@ -6,8 +6,6 @@ Backend and infrastructure for the BN Mallorca Radio App.
 - Functions implemented in Node JS.
 
 ### API Spec
-
-<img src="http://online.swagger.io/validator?url=https://raw.githubusercontent.com/xiscosc/bn_mallorca_backend/main/open-api.v1.json">
-
+[<img src="http://online.swagger.io/validator?url=https://raw.githubusercontent.com/xiscosc/bn_mallorca_backend/main/open-api.v1.json">](open-api.v1.json)
 ### Architecture diagram
 ![diagram.png](diagram.png)
