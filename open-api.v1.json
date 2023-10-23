@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "version": "0.0.1-alpha",
+    "version": "1.0",
     "title": "BN Mallorca"
   },
   "paths": {
@@ -14,7 +14,7 @@
           {
             "name": "limit",
             "in": "query",
-            "description": "How many items to return at one time (max 100)",
+            "description": "How many items to return at one time (max 25)",
             "required": false,
             "schema": {
               "type": "integer",
@@ -57,6 +57,32 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Some parameters where not valid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "Incorrect limit value"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error getting the track list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "Error"
+                }
+              }
+            }
           }
         }
       },
@@ -71,7 +97,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "example": "Bearer YOUR_JWT_TOKEN_HERE"
+              "example": "YOUR_JWT_TOKEN_HERE"
             }
           }
         ],
@@ -95,15 +121,36 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string"
-                    }
-                  }
+                  "$ref": "#/components/schemas/HttpMessage"
                 },
                 "example": {
-                  "status": "added"
+                  "message": "Track recorded for processing"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The track info was not valid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "Track info not valid"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error recording the track",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "There was an unexpected error"
                 }
               }
             }
@@ -114,6 +161,14 @@
   },
   "components": {
     "schemas": {
+      "HttpMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
       "TrackListResponse": {
         "type": "object",
         "required": ["tracks", "count"],

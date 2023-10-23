@@ -1,6 +1,6 @@
 import { ProxyResult, APIGatewayEvent } from 'aws-lambda'
 import * as log from 'lambda-log'
-import { badRequest, internalServerError, ok, stringIsValid } from '../helpers/lambda.helper'
+import { badRequest, internalServerError, created, stringIsValid } from '../helpers/lambda.helper'
 import { TrackService } from '../service/track.service'
 import { Track } from '../types/components'
 
@@ -16,7 +16,7 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
 
   try {
     await TrackService.triggerAsyncTrackProcessing(track)
-    return ok({ message: 'Track recorded for processing' })
+    return created({ message: 'Track recorded for processing' })
   } catch (err: any) {
     log.error(`Error processing Track: ${err.toString()} - ${JSON.stringify(track)}`)
     return internalServerError({ message: 'Error processing track' })

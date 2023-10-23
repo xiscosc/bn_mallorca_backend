@@ -16,6 +16,10 @@ export function ok(message: object): ProxyResult {
   return getResponse(200, message)
 }
 
+export function created(message: object): ProxyResult {
+  return getResponse(201, message)
+}
+
 function getResponse(statusCode: number, message: Object): ProxyResult {
   return {
     statusCode,

@@ -64,7 +64,7 @@ test('when track is correct, it triggers the processing lambda', async () => {
   const response = await handler(getApiGatewayEvent(JSON.stringify(track)))
   expect(TrackService.triggerAsyncTrackProcessing).toBeCalledTimes(1)
   expect(TrackService.triggerAsyncTrackProcessing).toBeCalledWith(track)
-  expect(response.statusCode).toBe(200)
+  expect(response.statusCode).toBe(201)
 })
 
 test('when track is correct but it can not trigger the lambda, it returns a 500', async () => {
