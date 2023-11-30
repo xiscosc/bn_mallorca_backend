@@ -271,7 +271,7 @@ export class BnMallorcaStack extends Stack {
      */
 
     const eventRule = new Rule(this, 'scheduleRule', {
-      schedule: Schedule.cron({ minute: '*' }),
+      schedule: Schedule.cron({}),
     })
     eventRule.addTarget(new LambdaFunction(fillQueueLambda))
 
