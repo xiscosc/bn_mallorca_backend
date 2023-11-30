@@ -51,6 +51,7 @@ jobs:
           API_DOMAIN_NAME: ${{ secrets.API_DOMAIN_NAME }}
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
+          CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
 
       - name: Diff stack
         run: npm run cdk diff
@@ -62,6 +63,7 @@ jobs:
           API_DOMAIN_NAME: ${{ secrets.API_DOMAIN_NAME }}
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
+          CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
 
       - name: Deploy stack
         run: npx cdk deploy --all --require-approval never
@@ -73,6 +75,7 @@ jobs:
           API_DOMAIN_NAME: ${{ secrets.API_DOMAIN_NAME }}
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
+          CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
 
   deploy-prod:
     name: Deploy to prod
@@ -115,6 +118,7 @@ jobs:
           API_DOMAIN_NAME: ${{ secrets.API_DOMAIN_NAME }}
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
+          CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
 
       - name: Diff stack
         run: npm run cdk diff
@@ -126,6 +130,7 @@ jobs:
           API_DOMAIN_NAME: ${{ secrets.API_DOMAIN_NAME }}
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
+          CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
 
       - name: Deploy stack
         run: npx cdk deploy --all --require-approval never
@@ -137,3 +142,4 @@ jobs:
           API_DOMAIN_NAME: ${{ secrets.API_DOMAIN_NAME }}
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
+          CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
