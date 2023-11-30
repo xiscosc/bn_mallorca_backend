@@ -9,12 +9,16 @@ import {
   TokenAuthorizer,
 } from 'aws-cdk-lib/aws-apigateway'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
+import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
+import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets'
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
+import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager'
 import { Topic } from 'aws-cdk-lib/aws-sns'
+import { Queue } from 'aws-cdk-lib/aws-sqs'
 import { Construct } from 'constructs'
 
 interface BnMallorcaStackProps extends StackProps {
@@ -25,6 +29,7 @@ interface BnMallorcaStackProps extends StackProps {
   apiDomainName: string
   apiDomainAPIGatewayDomainName: string
   apiDomainHostedZoneId: string
+  centovaUrl: string
 }
 
 const LAMBDA_DIR = `${__dirname}/../src/lambda/`
@@ -51,6 +56,11 @@ export class BnMallorcaStack extends Stack {
       billingMode: BillingMode.PAY_PER_REQUEST,
       partitionKey: { name: 'id', type: AttributeType.STRING },
     })
+
+    /**
+     * Queue
+     */
+    const pollingQueue = new Queue(this, `${this.props.envName}-polling-queue`, {})
 
     /**
      *  S3 Buckets
@@ -166,6 +176,44 @@ export class BnMallorcaStack extends Stack {
       },
     })
 
+    const pollNewTrackLambda = new NodejsFunction(this, `${this.props.envName}-pollNewTrackLambda`, {
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 256,
+      functionName: `${this.props.envName}-pollNewTrackLambda`,
+      entry: `${LAMBDA_DIR}poll-new-track.lambda.ts`,
+      timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
+      environment: {
+        TRACK_LIST_TABLE: trackListTable.tableName,
+        CENTOVA_URL: this.props.centovaUrl,
+        PROCESS_LAMBDA_ARN: processNewTrackLambda.functionArn,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    })
+
+    const fillQueueLambda = new NodejsFunction(this, `${this.props.envName}-fillQueueLambda`, {
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 128,
+      functionName: `${this.props.envName}-fillQueueLambda`,
+      entry: `${LAMBDA_DIR}fill-queue.lambda.ts`,
+      timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
+      environment: {
+        POLL_QUEUE_URL: pollingQueue.queueUrl,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    })
+
     /**
      * API Rest
      */
@@ -219,14 +267,28 @@ export class BnMallorcaStack extends Stack {
     )
 
     /**
+     * Schedule the polling job
+     */
+
+    const eventRule = new Rule(this, 'scheduleRule', {
+      schedule: Schedule.cron({ minute: '1' }),
+    })
+    eventRule.addTarget(new LambdaFunction(fillQueueLambda))
+
+    const queueEventSource = new SqsEventSource(pollingQueue, { batchSize: 1 })
+    pollNewTrackLambda.addEventSource(queueEventSource)
+
+    /**
      *  Permissions
      */
     processNewTrackLambda.grantInvoke(postNewTrackLambda)
+    processNewTrackLambda.grantInvoke(pollNewTrackLambda)
 
     cacheAlbumArtLambda.grantInvoke(processNewTrackLambda)
 
     trackListTable.grantWriteData(processNewTrackLambda)
     trackListTable.grantReadData(getTackListLambda)
+    trackListTable.grantReadData(pollNewTrackLambda)
 
     albumArtTable.grantWriteData(cacheAlbumArtLambda)
     albumArtTable.grantReadData(processNewTrackLambda)
@@ -241,5 +303,7 @@ export class BnMallorcaStack extends Stack {
     jwtSecret.grantRead(authorizerLambda)
     spotifySecret.grantRead(processNewTrackLambda)
     spotifyClientId.grantRead(processNewTrackLambda)
+
+    pollingQueue.grantSendMessages(fillQueueLambda)
   }
 }

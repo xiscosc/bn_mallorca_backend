@@ -2,6 +2,7 @@ import { Track as SpotifyTrack } from '@spotify/web-api-ts-sdk'
 import { env } from '../config/env'
 import { getTrackId, getTrackTs, isBNTrack } from '../helpers/track.helper'
 import { albumArtUrlToBuffer } from '../net/album-art.downloader'
+import { getCurrentTrackFromCentova } from '../net/centova.downloader'
 import { triggerAsyncLambda } from '../net/lambda'
 import { getAlbumArtWithSignedUrl, storeAlbumArtInS3 } from '../net/s3'
 import { publishToSns } from '../net/sns'
@@ -22,6 +23,10 @@ export class TrackService {
 
   public static async triggerAsyncTrackProcessing(track: Track) {
     await triggerAsyncLambda(env.processLambdaArn, track)
+  }
+
+  public static async getCurrentTrackFromCentova(): Promise<Track> {
+    return await getCurrentTrackFromCentova()
   }
 
   public async processTrack(centovaTrack: Track): Promise<Track> {
@@ -54,6 +59,12 @@ export class TrackService {
 
     const tracksDto = await this.trackListRepository.getLastTracks(limit)
     return await Promise.all(tracksDto.map(t => this.trackDtoToModel(t)))
+  }
+
+  public async trackHasChanged(centovaTrack: Track): Promise<boolean> {
+    const trackDto = (await this.trackListRepository.getLastTracks(1))[0]
+    if (trackDto === undefined) return true
+    return getTrackId(centovaTrack) !== trackDto.id
   }
 
   public async cacheAlbumArt(spotifyAlbumArt: AlbumArt[], trackId: string) {
