@@ -30,6 +30,7 @@ interface BnMallorcaStackProps extends StackProps {
   apiDomainAPIGatewayDomainName: string
   apiDomainHostedZoneId: string
   centovaUrl: string
+  iosAppSns: string
 }
 
 const LAMBDA_DIR = `${__dirname}/../src/lambda/`
@@ -214,6 +215,25 @@ export class BnMallorcaStack extends Stack {
       },
     })
 
+    const registerDeviceLambda = new NodejsFunction(this, `${this.props.envName}-registerDeviceLambda`, {
+      runtime: Runtime.NODEJS_18_X,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 128,
+      functionName: `${this.props.envName}-registerDeviceLambda`,
+      entry: `${LAMBDA_DIR}register-device.lambda.ts`,
+      timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
+      environment: {
+        NOTIFICATION_TOPIC: notificationsTopic.topicArn,
+        IOS_APP_SNS: this.props.iosAppSns,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    })
+
     /**
      * API Rest
      */
@@ -237,12 +257,16 @@ export class BnMallorcaStack extends Stack {
 
     const getTrackListIntegration = new LambdaIntegration(getTackListLambda)
     const postTrackIntegration = new LambdaIntegration(postNewTrackLambda)
-    const trackListResource = api.root.addResource('api').addResource('v1').addResource('tracklist')
+    const registerDeviceIntegration = new LambdaIntegration(registerDeviceLambda)
+    const apiV1 = api.root.addResource('api').addResource('v1')
+    const trackListResource = apiV1.addResource('tracklist')
+    const registerResource = apiV1.addResource('register')
     trackListResource.addMethod('GET', getTrackListIntegration)
     trackListResource.addMethod('POST', postTrackIntegration, {
       authorizationType: AuthorizationType.CUSTOM,
       authorizer,
     })
+    registerResource.addMethod('POST', registerDeviceIntegration)
 
     // eslint-disable-next-line no-new
     new BasePathMapping(this, `${this.props.envName}-apiPathMapping`, {
