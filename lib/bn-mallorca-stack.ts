@@ -291,16 +291,18 @@ export class BnMallorcaStack extends Stack {
     )
 
     /**
-     * Schedule the polling job
+     * Schedule the polling job (Only in prod)
      */
 
-    const eventRule = new Rule(this, 'scheduleRule', {
-      schedule: Schedule.cron({}),
-    })
-    eventRule.addTarget(new LambdaFunction(fillQueueLambda))
+    if (this.props.envName === 'prod') {
+      const eventRule = new Rule(this, 'scheduleRule', {
+        schedule: Schedule.cron({}),
+      })
+      eventRule.addTarget(new LambdaFunction(fillQueueLambda))
 
-    const queueEventSource = new SqsEventSource(pollingQueue, { batchSize: 1 })
-    pollNewTrackLambda.addEventSource(queueEventSource)
+      const queueEventSource = new SqsEventSource(pollingQueue, { batchSize: 1 })
+      pollNewTrackLambda.addEventSource(queueEventSource)
+    }
 
     /**
      *  Permissions

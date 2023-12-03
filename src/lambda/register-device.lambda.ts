@@ -2,9 +2,10 @@ import { ProxyResult, APIGatewayEvent } from 'aws-lambda'
 import * as log from 'lambda-log'
 import { badRequest, internalServerError, ok, stringIsValid } from '../helpers/lambda.helper'
 import { registerDevice } from '../service/device.service'
+import { DeviceToken } from '../types/components'
 
 export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
-  const tokenInfo = JSON.parse(event.body!!)
+  const tokenInfo: DeviceToken = JSON.parse(event.body!!)
   if (
     !tokenInfo ||
     !stringIsValid(tokenInfo.token) ||
