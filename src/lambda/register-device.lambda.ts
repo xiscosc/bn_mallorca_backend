@@ -19,7 +19,7 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
     await registerDevice(tokenInfo.token, tokenInfo.type)
     return ok({ message: 'Device registered' })
   } catch (err: any) {
-    log.error(`Error getting track list: ${err.toString()}`)
+    log.error(`Error registering device: ${err.toString()}`)
     return internalServerError({ message: 'Device could not be registered' })
   }
 }

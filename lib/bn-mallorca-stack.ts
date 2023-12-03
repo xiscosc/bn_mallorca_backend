@@ -11,6 +11,7 @@ import {
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets'
+import { Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
@@ -238,7 +239,7 @@ export class BnMallorcaStack extends Stack {
      * API Rest
      */
     const api = new RestApi(this, `${this.props.envName}-trackListApi`, {
-      restApiName: 'TrackList API',
+      restApiName: `TrackList API - ${this.props.envName}`,
       endpointConfiguration: {
         types: [EndpointType.REGIONAL],
       },
@@ -295,14 +296,14 @@ export class BnMallorcaStack extends Stack {
      */
 
     if (this.props.envName === 'prod') {
-      const eventRule = new Rule(this, 'scheduleRule', {
-        schedule: Schedule.cron({}),
+      const eventRule = new Rule(this, `${this.props.envName}-scheduleRule`, {
+        schedule: Schedule.cron({ minute: '*' }),
       })
       eventRule.addTarget(new LambdaFunction(fillQueueLambda))
-
-      const queueEventSource = new SqsEventSource(pollingQueue, { batchSize: 1 })
-      pollNewTrackLambda.addEventSource(queueEventSource)
     }
+
+    const queueEventSource = new SqsEventSource(pollingQueue, { batchSize: 1 })
+    pollNewTrackLambda.addEventSource(queueEventSource)
 
     /**
      *  Permissions
@@ -331,5 +332,21 @@ export class BnMallorcaStack extends Stack {
     spotifyClientId.grantRead(processNewTrackLambda)
 
     pollingQueue.grantSendMessages(fillQueueLambda)
+
+    const snsRegisterPolicy = new PolicyStatement({
+      actions: ['sns:CreatePlatformApplication'],
+      resources: [this.props.iosAppSns],
+    })
+
+    const snsSubscribePolicy = new PolicyStatement({
+      actions: ['sns:Subscribe'],
+      resources: [notificationsTopic.topicArn],
+    })
+
+    registerDeviceLambda.role?.attachInlinePolicy(
+      new Policy(this, `${this.props.envName}-registerDevicePolicy`, {
+        statements: [snsRegisterPolicy, snsSubscribePolicy],
+      }),
+    )
   }
 }
