@@ -157,6 +157,67 @@
           }
         }
       }
+    },
+    "/api/v1/register": {
+      "post": {
+        "tags": ["devices"],
+        "summary": "Register a device for notifications",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceToken"
+              },
+              "example": {
+                "type": "ios",
+                "token": "123456789"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The device was registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "Device registered"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Incorrect input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "Incorrect input"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error registering the device",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "Error registering the device"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -187,6 +248,19 @@
         "maxItems": 100,
         "items": {
           "$ref": "#/components/schemas/Track"
+        }
+      },
+      "DeviceToken": {
+        "type": "object",
+        "required": ["type", "token"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["ios", "android"]
+          },
+          "token": {
+            "type": "string"
+          }
         }
       },
       "Track": {

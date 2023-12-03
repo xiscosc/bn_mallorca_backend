@@ -14,6 +14,7 @@ export class BnMallorcaApp extends App {
       apiDomainAPIGatewayDomainName: BnMallorcaApp.getFromEnv('API_DOMAIN_GATEWAY_NAME'),
       apiDomainHostedZoneId: BnMallorcaApp.getFromEnv('API_DOMAIN_HOSTED_ZONE_ID'),
       centovaUrl: BnMallorcaApp.getFromEnv('CENTOVA_URL'),
+      iosAppSns: BnMallorcaApp.getFromEnv('IOS_APP_SNS'),
     }
     // eslint-disable-next-line no-new
     new BnMallorcaStack(this, `${props.envName}-bnmallorca-stack`, props)
