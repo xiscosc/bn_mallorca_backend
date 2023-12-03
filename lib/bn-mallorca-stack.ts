@@ -334,7 +334,7 @@ export class BnMallorcaStack extends Stack {
     pollingQueue.grantSendMessages(fillQueueLambda)
 
     const snsRegisterPolicy = new PolicyStatement({
-      actions: ['sns:CreatePlatformApplication'],
+      actions: ['sns:CreatePlatformEndpoint'],
       resources: [this.props.iosAppSns],
     })
 
