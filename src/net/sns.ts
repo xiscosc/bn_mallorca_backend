@@ -14,9 +14,9 @@ export async function publishToSns(topic: string, payload: string) {
     TopicArn: topic,
     MessageStructure: 'json',
     MessageAttributes: {
-      'AWS.SNS.MOBILE.APNS.TOPIC': { DataType: 'string', StringValue: 'com.apploading.bnmallorca' },
-      'AWS.SNS.MOBILE.APNS.PUSH_TYPE': { DataType: 'string', StringValue: 'background' },
-      'AWS.SNS.MOBILE.APNS.PRIORITY': { DataType: 'string', StringValue: '5' },
+      'AWS.SNS.MOBILE.APNS.TOPIC': { DataType: 'String', StringValue: 'com.apploading.bnmallorca' },
+      'AWS.SNS.MOBILE.APNS.PUSH_TYPE': { DataType: 'String', StringValue: 'background' },
+      'AWS.SNS.MOBILE.APNS.PRIORITY': { DataType: 'String', StringValue: '5' },
     },
   }
 
