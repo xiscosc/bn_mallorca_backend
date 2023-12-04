@@ -12,6 +12,7 @@ export async function publishToSns(topic: string, payload: string) {
   const notificationInput: PublishCommandInput = {
     Message: JSON.stringify(pushNotificationPayload),
     TopicArn: topic,
+    MessageStructure: 'json',
   }
 
   await snsClient.send(new PublishCommand(notificationInput))
