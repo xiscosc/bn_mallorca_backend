@@ -188,9 +188,14 @@ export class BnMallorcaStack extends Stack {
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
-        TRACK_LIST_TABLE: trackListTable.tableName,
         CENTOVA_URL: this.props.centovaUrl,
-        PROCESS_LAMBDA_ARN: processNewTrackLambda.functionArn,
+        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
+        ALBUM_ART_TABLE: albumArtTable.tableName,
+        TRACK_LIST_TABLE: trackListTable.tableName,
+        NOTIFICATION_TOPIC: notificationsTopic.topicArn,
+        CACHE_LAMBDA_ARN: cacheAlbumArtLambda.functionArn,
+        SPOTIFY_CLIENT_ID: this.props.spotifyClientIdArn,
+        SPOTIFY_SECRET_ID: this.props.spotifySecretArn,
       },
       bundling: {
         minify: true,
