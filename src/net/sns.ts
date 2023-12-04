@@ -2,8 +2,15 @@ import { PublishCommand, PublishCommandInput, SNSClient } from '@aws-sdk/client-
 
 export async function publishToSns(topic: string, payload: string) {
   const snsClient = new SNSClient({})
+  const dataObj = { data: JSON.parse(payload) }
+  const pushNotificationPayload = {
+    default: payload,
+    GCM: JSON.stringify(dataObj),
+    APNS: JSON.stringify({ aps: { 'content-available': 1 }, ...dataObj }),
+  }
+
   const notificationInput: PublishCommandInput = {
-    Message: payload,
+    Message: JSON.stringify(pushNotificationPayload),
     TopicArn: topic,
   }
 
