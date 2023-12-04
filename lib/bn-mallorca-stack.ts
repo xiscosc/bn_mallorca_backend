@@ -314,27 +314,32 @@ export class BnMallorcaStack extends Stack {
      *  Permissions
      */
     processNewTrackLambda.grantInvoke(postNewTrackLambda)
-    processNewTrackLambda.grantInvoke(pollNewTrackLambda)
 
     cacheAlbumArtLambda.grantInvoke(processNewTrackLambda)
+    cacheAlbumArtLambda.grantInvoke(pollNewTrackLambda)
 
     trackListTable.grantWriteData(processNewTrackLambda)
     trackListTable.grantReadData(getTackListLambda)
-    trackListTable.grantReadData(pollNewTrackLambda)
+    trackListTable.grantReadWriteData(pollNewTrackLambda)
 
     albumArtTable.grantWriteData(cacheAlbumArtLambda)
     albumArtTable.grantReadData(processNewTrackLambda)
+    albumArtTable.grantReadData(pollNewTrackLambda)
     albumArtTable.grantReadData(getTackListLambda)
 
     albumArtBucket.grantWrite(cacheAlbumArtLambda)
     albumArtBucket.grantRead(processNewTrackLambda)
+    albumArtBucket.grantRead(pollNewTrackLambda)
     albumArtBucket.grantRead(getTackListLambda)
 
     notificationsTopic.grantPublish(processNewTrackLambda)
+    notificationsTopic.grantPublish(pollNewTrackLambda)
 
     jwtSecret.grantRead(authorizerLambda)
     spotifySecret.grantRead(processNewTrackLambda)
+    spotifySecret.grantRead(pollNewTrackLambda)
     spotifyClientId.grantRead(processNewTrackLambda)
+    spotifyClientId.grantRead(pollNewTrackLambda)
 
     pollingQueue.grantSendMessages(fillQueueLambda)
 
