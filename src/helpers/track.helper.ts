@@ -10,6 +10,6 @@ export function getTrackTs(): number {
 }
 
 export function isBNTrack(track: Track): boolean {
-  const bnNames = ['bn mallorca', 'publicidad', 'bn mca']
+  const bnNames = ['bn mallorca', 'bn mallorca radio', 'publicidad', 'bn mca', 'bn mca radio', 'en bn mca radio']
   return bnNames.indexOf(track.name.toLowerCase()) > -1 || bnNames.indexOf(track.artist.toLowerCase()) > -1
 }
