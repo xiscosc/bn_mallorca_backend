@@ -1,11 +1,4 @@
-import {
-  GetObjectCommand,
-  GetObjectCommandInput,
-  PutObjectCommand,
-  PutObjectCommandInput,
-  S3Client,
-} from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { PutObjectCommand, PutObjectCommandInput, S3Client } from '@aws-sdk/client-s3'
 import { env } from '../config/env'
 import { AlbumArt } from '../types/components'
 
@@ -22,13 +15,8 @@ export async function storeAlbumArtInS3(trackId: string, size: string, body: Buf
   await getS3Client().send(new PutObjectCommand(input))
 }
 
-export async function getAlbumArtWithSignedUrl(trackId: string, size: string): Promise<AlbumArt> {
-  const input: GetObjectCommandInput = {
-    Key: `${trackId}/${size}`,
-    Bucket: env.albumArtBucket,
-  }
-
-  const downloadUrl = await getSignedUrl(getS3Client(), new GetObjectCommand(input), { expiresIn: 180 })
+export async function getAlbumArtWithUrl(trackId: string, size: string): Promise<AlbumArt> {
+  const downloadUrl = `${env.albumArtBucketUrl}/${trackId}/${size}`
   return { size, downloadUrl }
 }
 

@@ -4,7 +4,7 @@ import { getTrackId, getTrackTs, isBNTrack } from '../helpers/track.helper'
 import { albumArtUrlToBuffer } from '../net/album-art.downloader'
 import { getCurrentTrackFromCentova } from '../net/centova.downloader'
 import { triggerAsyncLambda } from '../net/lambda'
-import { getAlbumArtWithSignedUrl, storeAlbumArtInS3 } from '../net/s3'
+import { getAlbumArtWithUrl, storeAlbumArtInS3 } from '../net/s3'
 import { publishToSns } from '../net/sns'
 import { getSpotifyResults } from '../net/spotify'
 import { AlbumArtRepository } from '../repository/album-art.repository'
@@ -128,7 +128,7 @@ export class TrackService {
   }
 
   private static async transformAlbumArtDtoToModel(dto: AlbumArtDto): Promise<AlbumArt[]> {
-    return await Promise.all(dto.sizes.map(s => getAlbumArtWithSignedUrl(dto.id, s)))
+    return await Promise.all(dto.sizes.map(s => getAlbumArtWithUrl(dto.id, s)))
   }
 
   private static transformTrackToDto(track: Track): TrackDto {

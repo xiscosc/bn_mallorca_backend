@@ -5,7 +5,7 @@ import { TrackService } from './track.service'
 import { getTrackId, getTrackTs, isBNTrack } from '../helpers/track.helper'
 import { albumArtUrlToBuffer } from '../net/album-art.downloader'
 import { triggerAsyncLambda } from '../net/lambda'
-import { getAlbumArtWithSignedUrl, storeAlbumArtInS3 } from '../net/s3'
+import { getAlbumArtWithUrl, storeAlbumArtInS3 } from '../net/s3'
 import { publishToSns } from '../net/sns'
 import { getSpotifyResults } from '../net/spotify'
 import { AlbumArtRepository } from '../repository/album-art.repository'
@@ -34,7 +34,7 @@ beforeEach(() => {
   jest.clearAllMocks()
   when(getTrackId).mockReturnValue(id)
   when(getTrackTs).mockReturnValue(ts)
-  when(getAlbumArtWithSignedUrl).mockImplementation(async (t, s) => getArt(t, s))
+  when(getAlbumArtWithUrl).mockImplementation(async (t, s) => getArt(t, s))
   when(TrackListRepository.getPartitionKeyValue).mockReturnValue('BNMALLORCA')
 })
 
@@ -69,7 +69,7 @@ test('processed track is an ad from bn radio', async () => {
   expect(AlbumArtRepository.prototype.getAlbumArt).toBeCalledTimes(0)
   expect(getSpotifyResults).toBeCalledTimes(0)
   expect(triggerAsyncLambda).toBeCalledTimes(0)
-  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(0)
+  expect(getAlbumArtWithUrl).toBeCalledTimes(0)
   expect(publishToSns).toBeCalledTimes(1)
   expect(publishToSns).toBeCalledWith(expect.stringContaining(''), JSON.stringify(getFullTrack([])))
   expect(TrackListRepository.prototype.putTrack).toBeCalledTimes(1)
@@ -87,7 +87,7 @@ test('processed track has cached album art', async () => {
   expect(AlbumArtRepository.prototype.getAlbumArt).toBeCalledTimes(1)
   expect(getSpotifyResults).toBeCalledTimes(0)
   expect(triggerAsyncLambda).toBeCalledTimes(0)
-  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(2)
+  expect(getAlbumArtWithUrl).toBeCalledTimes(2)
   expect(publishToSns).toBeCalledTimes(1)
   expect(publishToSns).toBeCalledWith(expect.stringContaining(''), JSON.stringify(fullTrack))
   expect(TrackListRepository.prototype.putTrack).toBeCalledTimes(1)
@@ -146,7 +146,7 @@ test('processed track has no cached album art - no good results from spotify', a
   expect(AlbumArtRepository.prototype.getAlbumArt).toBeCalledTimes(1)
   expect(getSpotifyResults).toBeCalledTimes(1)
   expect(triggerAsyncLambda).toBeCalledTimes(0)
-  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(0)
+  expect(getAlbumArtWithUrl).toBeCalledTimes(0)
   expect(publishToSns).toBeCalledTimes(1)
   expect(publishToSns).toBeCalledWith(expect.stringContaining(''), JSON.stringify(fullTrack))
   expect(TrackListRepository.prototype.putTrack).toBeCalledTimes(1)
@@ -241,7 +241,7 @@ test('processed track has no cached album art - obtained from spotify', async ()
   expect(getSpotifyResults).toBeCalledTimes(1)
   expect(triggerAsyncLambda).toBeCalledTimes(1)
   expect(triggerAsyncLambda).toBeCalledWith(expect.stringContaining(''), fullTrack)
-  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(0)
+  expect(getAlbumArtWithUrl).toBeCalledTimes(0)
   expect(publishToSns).toBeCalledTimes(1)
   expect(publishToSns).toBeCalledWith(expect.stringContaining(''), JSON.stringify(fullTrack))
   expect(TrackListRepository.prototype.putTrack).toBeCalledTimes(1)
@@ -303,7 +303,7 @@ test('processed track has no cached album art - obtained from spotify with a col
   expect(getSpotifyResults).toBeCalledTimes(1)
   expect(triggerAsyncLambda).toBeCalledTimes(1)
   expect(triggerAsyncLambda).toBeCalledWith(expect.stringContaining(''), fullTrack)
-  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(0)
+  expect(getAlbumArtWithUrl).toBeCalledTimes(0)
   expect(publishToSns).toBeCalledTimes(1)
   expect(publishToSns).toBeCalledWith(expect.stringContaining(''), JSON.stringify(fullTrack))
   expect(TrackListRepository.prototype.putTrack).toBeCalledTimes(1)
@@ -321,7 +321,7 @@ test('processed track has no cached album art - no results from spotify', async 
   expect(AlbumArtRepository.prototype.getAlbumArt).toBeCalledTimes(1)
   expect(getSpotifyResults).toBeCalledTimes(1)
   expect(triggerAsyncLambda).toBeCalledTimes(0)
-  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(0)
+  expect(getAlbumArtWithUrl).toBeCalledTimes(0)
   expect(publishToSns).toBeCalledTimes(1)
   expect(publishToSns).toBeCalledWith(expect.stringContaining(''), JSON.stringify(fullTrack))
   expect(TrackListRepository.prototype.putTrack).toBeCalledTimes(1)
@@ -341,7 +341,7 @@ test('gettting track list - no data in db', async () => {
   expect(result.length).toEqual(0)
   expect(isBNTrack).toBeCalledTimes(0)
   expect(AlbumArtRepository.prototype.getAlbumArt).toBeCalledTimes(0)
-  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(0)
+  expect(getAlbumArtWithUrl).toBeCalledTimes(0)
 })
 
 test('getting track list - bn mallorca track', async () => {
@@ -357,7 +357,7 @@ test('getting track list - bn mallorca track', async () => {
   expect(resultTrack.albumArt!!.length).toEqual(0)
   expect(isBNTrack).toBeCalledTimes(1)
   expect(AlbumArtRepository.prototype.getAlbumArt).toBeCalledTimes(0)
-  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(0)
+  expect(getAlbumArtWithUrl).toBeCalledTimes(0)
 })
 
 test('getting track list - normal track without album art', async () => {
@@ -374,7 +374,7 @@ test('getting track list - normal track without album art', async () => {
   expect(resultTrack.albumArt!!.length).toEqual(0)
   expect(isBNTrack).toBeCalledTimes(1)
   expect(AlbumArtRepository.prototype.getAlbumArt).toBeCalledTimes(1)
-  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(0)
+  expect(getAlbumArtWithUrl).toBeCalledTimes(0)
 })
 
 test('getting track list - normal track with album art', async () => {
@@ -399,7 +399,7 @@ test('getting track list - normal track with album art', async () => {
   expect(isBNTrack).toBeCalledTimes(1)
 
   expect(AlbumArtRepository.prototype.getAlbumArt).toBeCalledTimes(1)
-  expect(getAlbumArtWithSignedUrl).toBeCalledTimes(2)
+  expect(getAlbumArtWithUrl).toBeCalledTimes(2)
 })
 
 function getArt(trackId: string, size: string): AlbumArt {

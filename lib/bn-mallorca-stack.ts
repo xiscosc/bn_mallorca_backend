@@ -16,7 +16,7 @@ import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
 import { RetentionDays } from 'aws-cdk-lib/aws-logs'
-import { Bucket } from 'aws-cdk-lib/aws-s3'
+import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3'
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager'
 import { Topic } from 'aws-cdk-lib/aws-sns'
 import { Queue } from 'aws-cdk-lib/aws-sqs'
@@ -69,6 +69,14 @@ export class BnMallorcaStack extends Stack {
      */
     const albumArtBucket = new Bucket(this, `${this.props.envName}-albumArtBucket`, {
       bucketName: `${this.props.envName}-bnmca-albums`,
+      publicReadAccess: true,
+      websiteIndexDocument: 'index.html',
+      blockPublicAccess: new BlockPublicAccess({
+        blockPublicPolicy: false,
+        blockPublicAcls: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false,
+      }),
     })
 
     /**
@@ -80,7 +88,7 @@ export class BnMallorcaStack extends Stack {
      *  Lambda functions
      */
     const authorizerLambda = new NodejsFunction(this, `${this.props.envName}-authorizerLambda`, {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
       memorySize: 128,
@@ -98,7 +106,7 @@ export class BnMallorcaStack extends Stack {
     })
 
     const cacheAlbumArtLambda = new NodejsFunction(this, `${this.props.envName}-cacheAlbumArtLambda`, {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
       memorySize: 256,
@@ -117,7 +125,7 @@ export class BnMallorcaStack extends Stack {
     })
 
     const processNewTrackLambda = new NodejsFunction(this, `${this.props.envName}-processNewTrackLambda`, {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
       memorySize: 256,
@@ -126,7 +134,7 @@ export class BnMallorcaStack extends Stack {
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
-        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
+        ALBUM_ART_BUCKET_URL: albumArtBucket.bucketWebsiteUrl,
         ALBUM_ART_TABLE: albumArtTable.tableName,
         TRACK_LIST_TABLE: trackListTable.tableName,
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,
@@ -141,7 +149,7 @@ export class BnMallorcaStack extends Stack {
     })
 
     const getTackListLambda = new NodejsFunction(this, `${this.props.envName}-getTackListLambda`, {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
       memorySize: 256,
@@ -150,7 +158,7 @@ export class BnMallorcaStack extends Stack {
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
-        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
+        ALBUM_ART_BUCKET_URL: albumArtBucket.bucketWebsiteUrl,
         TRACK_LIST_TABLE: trackListTable.tableName,
         ALBUM_ART_TABLE: albumArtTable.tableName,
       },
@@ -161,7 +169,7 @@ export class BnMallorcaStack extends Stack {
     })
 
     const postNewTrackLambda = new NodejsFunction(this, `${this.props.envName}-postNewTrackLambda`, {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
       memorySize: 128,
@@ -179,7 +187,7 @@ export class BnMallorcaStack extends Stack {
     })
 
     const pollNewTrackLambda = new NodejsFunction(this, `${this.props.envName}-pollNewTrackLambda`, {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
       memorySize: 256,
@@ -189,7 +197,7 @@ export class BnMallorcaStack extends Stack {
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
         CENTOVA_URL: this.props.centovaUrl,
-        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
+        ALBUM_ART_BUCKET_URL: albumArtBucket.bucketWebsiteUrl,
         ALBUM_ART_TABLE: albumArtTable.tableName,
         TRACK_LIST_TABLE: trackListTable.tableName,
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,
@@ -204,7 +212,7 @@ export class BnMallorcaStack extends Stack {
     })
 
     const fillQueueLambda = new NodejsFunction(this, `${this.props.envName}-fillQueueLambda`, {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
       memorySize: 128,
@@ -222,7 +230,7 @@ export class BnMallorcaStack extends Stack {
     })
 
     const registerDeviceLambda = new NodejsFunction(this, `${this.props.envName}-registerDeviceLambda`, {
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_20_X,
       architecture: Architecture.ARM_64,
       handler: 'handler',
       memorySize: 128,
@@ -328,9 +336,6 @@ export class BnMallorcaStack extends Stack {
     albumArtTable.grantReadData(getTackListLambda)
 
     albumArtBucket.grantWrite(cacheAlbumArtLambda)
-    albumArtBucket.grantRead(processNewTrackLambda)
-    albumArtBucket.grantRead(pollNewTrackLambda)
-    albumArtBucket.grantRead(getTackListLambda)
 
     notificationsTopic.grantPublish(processNewTrackLambda)
     notificationsTopic.grantPublish(pollNewTrackLambda)
