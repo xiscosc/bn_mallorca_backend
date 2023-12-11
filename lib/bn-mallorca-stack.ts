@@ -134,7 +134,7 @@ export class BnMallorcaStack extends Stack {
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
-        ALBUM_ART_BUCKET_URL: albumArtBucket.bucketWebsiteUrl,
+        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
         ALBUM_ART_TABLE: albumArtTable.tableName,
         TRACK_LIST_TABLE: trackListTable.tableName,
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,
@@ -158,7 +158,7 @@ export class BnMallorcaStack extends Stack {
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
-        ALBUM_ART_BUCKET_URL: albumArtBucket.bucketWebsiteUrl,
+        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
         TRACK_LIST_TABLE: trackListTable.tableName,
         ALBUM_ART_TABLE: albumArtTable.tableName,
       },
@@ -197,7 +197,7 @@ export class BnMallorcaStack extends Stack {
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
         CENTOVA_URL: this.props.centovaUrl,
-        ALBUM_ART_BUCKET_URL: albumArtBucket.bucketWebsiteUrl,
+        ALBUM_ART_BUCKET: albumArtBucket.bucketName,
         ALBUM_ART_TABLE: albumArtTable.tableName,
         TRACK_LIST_TABLE: trackListTable.tableName,
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,

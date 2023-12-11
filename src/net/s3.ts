@@ -16,7 +16,7 @@ export async function storeAlbumArtInS3(trackId: string, size: string, body: Buf
 }
 
 export async function getAlbumArtWithUrl(trackId: string, size: string): Promise<AlbumArt> {
-  const downloadUrl = `${env.albumArtBucketUrl}/${trackId}/${size}`
+  const downloadUrl = `https://${env.albumArtBucket}.s3.amazonaws.com/${trackId}/${size}`
   return { size, downloadUrl }
 }
 
