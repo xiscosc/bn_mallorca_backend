@@ -11,4 +11,5 @@ export const env = {
   centovaUrl: process.env['CENTOVA_URL'] ?? '',
   pollQueueUrl: process.env['POLL_QUEUE_URL'] ?? '',
   iosAppSns: process.env['IOS_APP_SNS'] ?? '',
+  androidAppSns: process.env['ANDROID_APP_SNS'] ?? '',
 }

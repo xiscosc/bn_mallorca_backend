@@ -11,7 +11,7 @@ export async function registerDevice(token: string, type: string) {
   const client = new SNSClient()
 
   // Create endpoint
-  const snsApp = type === 'ios' ? env.iosAppSns : ''
+  const snsApp = type === 'ios' ? env.iosAppSns : env.androidAppSns
   const endpointParams: CreatePlatformEndpointCommandInput = {
     PlatformApplicationArn: snsApp,
     Token: token,

@@ -32,6 +32,7 @@ interface BnMallorcaStackProps extends StackProps {
   apiDomainHostedZoneId: string
   centovaUrl: string
   iosAppSns: string
+  androidAppSns: string
 }
 
 const LAMBDA_DIR = `${__dirname}/../src/lambda/`
@@ -241,6 +242,7 @@ export class BnMallorcaStack extends Stack {
       environment: {
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,
         IOS_APP_SNS: this.props.iosAppSns,
+        ANDROID_APP_SNS: this.props.androidAppSns,
       },
       bundling: {
         minify: true,
