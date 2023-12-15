@@ -352,7 +352,7 @@ export class BnMallorcaStack extends Stack {
 
     const snsRegisterPolicy = new PolicyStatement({
       actions: ['sns:CreatePlatformEndpoint'],
-      resources: [this.props.iosAppSns],
+      resources: [this.props.iosAppSns, this.props.androidAppSns],
     })
 
     const snsSubscribePolicy = new PolicyStatement({
