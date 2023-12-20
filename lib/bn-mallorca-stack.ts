@@ -256,7 +256,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 256,
       functionName: `${this.props.envName}-deleteDevicesLambda`,
-      entry: `${LAMBDA_DIR}register-device.lambda.ts`,
+      entry: `${LAMBDA_DIR}delete-devices.lambda.ts`,
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
