@@ -11,6 +11,7 @@ import {
   Subscription,
   UnsubscribeCommand,
 } from '@aws-sdk/client-sns'
+import * as log from 'lambda-log'
 import { env } from '../config/env'
 
 export async function registerDevice(token: string, type: string) {
@@ -41,7 +42,8 @@ export async function removeDisabledDevices() {
   const disabledEndpointsIos = await getDisabledEndpointArnsList('ios', client)
   const allDisabledEndpoints = [...disabledEndpointsAndroid, ...disabledEndpointsIos]
   const disabledEndpointArns = new Set<string>(allDisabledEndpoints)
-  if (disabledEndpointArns.size === 0) return
+  log.debug(`Found ${disabledEndpointArns.size} endpoints to delete`)
+  if (allDisabledEndpoints.length === 0) return
 
   const result = await client.send(new ListSubscriptionsByTopicCommand({ TopicArn: env.notificationTopicArn }))
   const subscriptionsToDelete = getSubscriptionsToDisable(disabledEndpointArns, result.Subscriptions)
@@ -54,6 +56,7 @@ export async function removeDisabledDevices() {
     subscriptionsToDelete.push(...getSubscriptionsToDisable(disabledEndpointArns, newResult.Subscriptions))
   }
 
+  log.debug(`Found ${subscriptionsToDelete.length} subscriptions to delete`)
   if (subscriptionsToDelete.length === 0) return
 
   const deleteSubscriptionPromises = subscriptionsToDelete.map(s =>
@@ -88,6 +91,7 @@ async function getDisabledEndpointArnsList(type: string, client: SNSClient): Pro
 function getDisabledEndpoints(endpoints?: Endpoint[]): Endpoint[] {
   if (endpoints === undefined) return []
   return endpoints.filter(e => {
+    log.debug(JSON.stringify(e))
     if (e.EndpointArn === undefined) return false
     if (e.Attributes === undefined) return false
     return e.Attributes['Enabled'] === 'false'
@@ -97,6 +101,7 @@ function getDisabledEndpoints(endpoints?: Endpoint[]): Endpoint[] {
 function getSubscriptionsToDisable(applicationArns: Set<string>, subscriptions?: Subscription[]): Subscription[] {
   if (subscriptions === undefined) return []
   return subscriptions.filter(s => {
+    log.debug(JSON.stringify(s))
     if (s.Endpoint === undefined) return false
     if (s.SubscriptionArn === undefined) return false
     return applicationArns.has(s.Endpoint)
