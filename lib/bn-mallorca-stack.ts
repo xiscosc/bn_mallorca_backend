@@ -250,6 +250,26 @@ export class BnMallorcaStack extends Stack {
       },
     })
 
+    const deleteDevicesLambda = new NodejsFunction(this, `${this.props.envName}-deleteDevicesLambda`, {
+      runtime: Runtime.NODEJS_20_X,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 256,
+      functionName: `${this.props.envName}-deleteDevicesLambda`,
+      entry: `${LAMBDA_DIR}register-device.lambda.ts`,
+      timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
+      environment: {
+        NOTIFICATION_TOPIC: notificationsTopic.topicArn,
+        IOS_APP_SNS: this.props.iosAppSns,
+        ANDROID_APP_SNS: this.props.androidAppSns,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    })
+
     /**
      * API Rest
      */
@@ -307,14 +327,19 @@ export class BnMallorcaStack extends Stack {
     )
 
     /**
-     * Schedule the polling job (Only in prod)
+     * Schedule the polling job and the cleaning job (Only in prod)
      */
 
     if (this.props.envName === 'prod') {
-      const eventRule = new Rule(this, `${this.props.envName}-scheduleRule`, {
+      const pollingEventRule = new Rule(this, `${this.props.envName}-pollingEventRule`, {
         schedule: Schedule.cron({ minute: '*' }),
       })
-      eventRule.addTarget(new LambdaFunction(fillQueueLambda))
+      pollingEventRule.addTarget(new LambdaFunction(fillQueueLambda))
+
+      const cleaningEventRule = new Rule(this, `${this.props.envName}-cleaningEventRule`, {
+        schedule: Schedule.cron({ minute: '0', hour: '3' }),
+      })
+      cleaningEventRule.addTarget(new LambdaFunction(deleteDevicesLambda))
     }
 
     const queueEventSource = new SqsEventSource(pollingQueue, { batchSize: 1 })
@@ -363,6 +388,22 @@ export class BnMallorcaStack extends Stack {
     registerDeviceLambda.role?.attachInlinePolicy(
       new Policy(this, `${this.props.envName}-registerDevicePolicy`, {
         statements: [snsRegisterPolicy, snsSubscribePolicy],
+      }),
+    )
+
+    const deleteDevicesPolicy = new PolicyStatement({
+      actions: ['sns:DeleteEndpoint', 'sns:ListEndpointsByPlatformApplication', 'sns:Unsubscribe'],
+      resources: ['*'],
+    })
+
+    const listSubscriptionsPolicy = new PolicyStatement({
+      actions: ['sns:ListSubscriptionsByTopic'],
+      resources: [notificationsTopic.topicArn],
+    })
+
+    deleteDevicesLambda.role?.attachInlinePolicy(
+      new Policy(this, `${this.props.envName}-deleteDevicesPolicy`, {
+        statements: [deleteDevicesPolicy, listSubscriptionsPolicy],
       }),
     )
   }

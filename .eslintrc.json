@@ -29,10 +29,11 @@
   },
   "overrides": [
     {
-      "files": ["cdk/**/*", "test/**/*"],
+      "files": ["bin/**/*", "lib/**/*", "src/**/*"],
       "rules": {
         "no-new": "off",
         "func-names": "off",
+        "no-await-in-loop": "off",
         "import/no-extraneous-dependencies": "off",
         "import/no-internal-modules": "off"
       }
