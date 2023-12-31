@@ -1,7 +1,7 @@
 import {
   CreatePlatformEndpointCommand,
   CreatePlatformEndpointCommandInput,
-  DeletePlatformApplicationCommand,
+  DeleteEndpointCommand,
   Endpoint,
   ListEndpointsByPlatformApplicationCommand,
   ListSubscriptionsByTopicCommand,
@@ -15,7 +15,7 @@ import * as log from 'lambda-log'
 import { env } from '../config/env'
 
 export async function registerDevice(token: string, type: string) {
-  const client = new SNSClient()
+  const client = new SNSClient({})
 
   // Create endpoint
   const snsApp = type === 'ios' ? env.iosAppSns : env.androidAppSns
@@ -37,7 +37,7 @@ export async function registerDevice(token: string, type: string) {
 }
 
 export async function removeDisabledDevices() {
-  const client = new SNSClient()
+  const client = new SNSClient({ region: 'eu-central-1' })
   const disabledEndpointsAndroid = await getDisabledEndpointArnsList('android', client)
   const disabledEndpointsIos = await getDisabledEndpointArnsList('ios', client)
   const allDisabledEndpoints = [...disabledEndpointsAndroid, ...disabledEndpointsIos]
@@ -57,15 +57,15 @@ export async function removeDisabledDevices() {
   }
 
   log.debug(`Found ${subscriptionsToDelete.length} subscriptions to delete`)
-  if (subscriptionsToDelete.length === 0) return
-
-  const deleteSubscriptionPromises = subscriptionsToDelete.map(s =>
-    client.send(new UnsubscribeCommand({ SubscriptionArn: s.SubscriptionArn! })),
-  )
-  await Promise.all(deleteSubscriptionPromises)
+  if (subscriptionsToDelete.length > 0) {
+    const deleteSubscriptionPromises = subscriptionsToDelete.map(s =>
+      client.send(new UnsubscribeCommand({ SubscriptionArn: s.SubscriptionArn! })),
+    )
+    await Promise.all(deleteSubscriptionPromises)
+  }
 
   const deleteEndpointPromises = allDisabledEndpoints.map(e =>
-    client.send(new DeletePlatformApplicationCommand({ PlatformApplicationArn: e })),
+    client.send(new DeleteEndpointCommand({ EndpointArn: e })),
   )
   await Promise.all(deleteEndpointPromises)
 }

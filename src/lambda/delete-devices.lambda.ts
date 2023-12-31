@@ -6,6 +6,6 @@ export async function handler(event: any): Promise<any> {
     await removeDisabledDevices()
     if (event !== undefined) log.info(JSON.stringify(event))
   } catch (e: any) {
-    log.error('error deleting devices', e)
+    log.error(`error deleting devices - ${e}`)
   }
 }
