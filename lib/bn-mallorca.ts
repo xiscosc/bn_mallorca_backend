@@ -17,7 +17,7 @@ export class BnMallorcaApp extends App {
       iosAppSns: BnMallorcaApp.getFromEnv('IOS_APP_SNS'),
       androidAppSns: BnMallorcaApp.getFromEnv('ANDROID_APP_SNS'),
     }
-    // eslint-disable-next-line no-new
+
     new BnMallorcaStack(this, `${props.envName}-bnmallorca-stack`, props)
   }
 

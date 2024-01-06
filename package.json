@@ -46,9 +46,6 @@
     "ts-node": "10.9.2",
     "typescript": "5.3.3"
   },
-  "overrides": {
-    "tsconfig-paths": "4.2.0"
-  },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "3.485.0",
     "@aws-sdk/client-lambda": "3.485.0",
