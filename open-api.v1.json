@@ -23,6 +23,25 @@
               "default": 1,
               "format": "int32"
             }
+          },
+          {
+            "name": "lastTrack",
+            "in": "query",
+            "description": "Last track id for pagination",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "filterAds",
+            "in": "query",
+            "description": "Set this value to filter out ads",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "tags": ["tracklist"],
@@ -236,6 +255,10 @@
         "properties": {
           "tracks": {
             "$ref": "#/components/schemas/Tracks"
+          },
+          "lastTrack": {
+            "type": "integer",
+            "format": "int32"
           },
           "count": {
             "type": "integer",

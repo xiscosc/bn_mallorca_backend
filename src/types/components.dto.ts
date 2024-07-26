@@ -11,3 +11,11 @@ export type AlbumArtDto = {
   id: string
   sizes: Array<string>
 }
+
+export type DeviceDto = {
+  token: string
+  status: number
+  type: string
+  endopintArn: string
+  subscriptionArn: string
+}

@@ -16,7 +16,10 @@ export class TrackListRepository extends DynamoRepository {
     await this.client.send(new PutCommand(input))
   }
 
-  public async getLastTracks(limit: number = 1): Promise<Array<TrackDto>> {
+  public async getLastTracks(
+    limit: number = 1,
+    lastSongKey?: number,
+  ): Promise<{ tracksDto: Array<TrackDto>; lastKey?: number }> {
     if (limit <= 0 || limit > 25) {
       throw Error('Limit is not between 1 and 25')
     }
@@ -30,8 +33,14 @@ export class TrackListRepository extends DynamoRepository {
       KeyConditionExpression: '#kn0 = :kv0',
     }
 
+    if (lastSongKey != null) {
+      input.ExclusiveStartKey = { radio: TrackListRepository.getPartitionKeyValue(), timestamp: lastSongKey }
+    }
+
     const results = await this.client.send(new QueryCommand(input))
-    return results.Items as Array<TrackDto>
+    const tracksDto = results.Items as Array<TrackDto>
+    const lastKeyDb = results.LastEvaluatedKey?.['timestamp'] ?? undefined
+    return { tracksDto, lastKey: lastKeyDb }
   }
 
   public static getPartitionKeyValue(): string {

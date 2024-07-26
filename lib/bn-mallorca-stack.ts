@@ -60,6 +60,18 @@ export class BnMallorcaStack extends Stack {
       partitionKey: { name: 'id', type: AttributeType.STRING },
     })
 
+    const deviceTable = new Table(this, `${this.props.envName}-deviceTable`, {
+      tableName: `${this.props.envName}-deviceTable`,
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      partitionKey: { name: 'token', type: AttributeType.STRING },
+    })
+
+    deviceTable.addGlobalSecondaryIndex({
+      indexName: 'statusIndex',
+      partitionKey: { name: 'status', type: AttributeType.NUMBER },
+      sortKey: { name: 'token', type: AttributeType.STRING },
+    })
+
     /**
      * Queue
      */
@@ -243,6 +255,28 @@ export class BnMallorcaStack extends Stack {
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,
         IOS_APP_SNS: this.props.iosAppSns,
         ANDROID_APP_SNS: this.props.androidAppSns,
+        DEVICE_TABLE: deviceTable.tableName,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    })
+
+    const unregisterDeviceLambda = new NodejsFunction(this, `${this.props.envName}-unregisterDeviceLambda`, {
+      runtime: Runtime.NODEJS_20_X,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 128,
+      functionName: `${this.props.envName}-unregisterDeviceLambda`,
+      entry: `${LAMBDA_DIR}unregister-device.lambda.ts`,
+      timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
+      environment: {
+        NOTIFICATION_TOPIC: notificationsTopic.topicArn,
+        IOS_APP_SNS: this.props.iosAppSns,
+        ANDROID_APP_SNS: this.props.androidAppSns,
+        DEVICE_TABLE: deviceTable.tableName,
       },
       bundling: {
         minify: true,
@@ -263,6 +297,28 @@ export class BnMallorcaStack extends Stack {
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,
         IOS_APP_SNS: this.props.iosAppSns,
         ANDROID_APP_SNS: this.props.androidAppSns,
+        DEVICE_TABLE: deviceTable.tableName,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    })
+
+    const findDisabledDevicesLambda = new NodejsFunction(this, `${this.props.envName}-findDisabledDevicesLambda`, {
+      runtime: Runtime.NODEJS_20_X,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 256,
+      functionName: `${this.props.envName}-findDisabledDevicesLambda`,
+      entry: `${LAMBDA_DIR}find-disabled-devices.lambda.ts`,
+      timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
+      environment: {
+        NOTIFICATION_TOPIC: notificationsTopic.topicArn,
+        IOS_APP_SNS: this.props.iosAppSns,
+        ANDROID_APP_SNS: this.props.androidAppSns,
+        DEVICE_TABLE: deviceTable.tableName,
       },
       bundling: {
         minify: true,
@@ -294,15 +350,18 @@ export class BnMallorcaStack extends Stack {
     const getTrackListIntegration = new LambdaIntegration(getTackListLambda)
     const postTrackIntegration = new LambdaIntegration(postNewTrackLambda)
     const registerDeviceIntegration = new LambdaIntegration(registerDeviceLambda)
+    const unregisterDeviceIntegration = new LambdaIntegration(unregisterDeviceLambda)
     const apiV1 = api.root.addResource('api').addResource('v1')
     const trackListResource = apiV1.addResource('tracklist')
     const registerResource = apiV1.addResource('register')
+    const unregisterResource = apiV1.addResource('unregister')
     trackListResource.addMethod('GET', getTrackListIntegration)
     trackListResource.addMethod('POST', postTrackIntegration, {
       authorizationType: AuthorizationType.CUSTOM,
       authorizer,
     })
     registerResource.addMethod('POST', registerDeviceIntegration)
+    unregisterResource.addMethod('POST', unregisterDeviceIntegration)
 
     // eslint-disable-next-line no-new
     new BasePathMapping(this, `${this.props.envName}-apiPathMapping`, {
@@ -337,9 +396,14 @@ export class BnMallorcaStack extends Stack {
       pollingEventRule.addTarget(new LambdaFunction(fillQueueLambda))
 
       const cleaningEventRule = new Rule(this, `${this.props.envName}-cleaningEventRule`, {
-        schedule: Schedule.cron({ minute: '0', hour: '3' }),
+        schedule: Schedule.cron({ hour: '*' }),
       })
       cleaningEventRule.addTarget(new LambdaFunction(deleteDevicesLambda))
+
+      const findDisabledDevicesRule = new Rule(this, `${this.props.envName}-findDisabledDevicesRule`, {
+        schedule: Schedule.cron({ minute: '0', hour: '3' }),
+      })
+      findDisabledDevicesRule.addTarget(new LambdaFunction(findDisabledDevicesLambda))
     }
 
     const queueEventSource = new SqsEventSource(pollingQueue, { batchSize: 1 })
@@ -375,9 +439,24 @@ export class BnMallorcaStack extends Stack {
 
     pollingQueue.grantSendMessages(fillQueueLambda)
 
+    deviceTable.grantReadWriteData(registerDeviceLambda)
+    deviceTable.grantReadWriteData(unregisterDeviceLambda)
+    deviceTable.grantReadWriteData(deleteDevicesLambda)
+    deviceTable.grantReadWriteData(findDisabledDevicesLambda)
+
     const snsRegisterPolicy = new PolicyStatement({
       actions: ['sns:CreatePlatformEndpoint'],
       resources: [this.props.iosAppSns, this.props.androidAppSns],
+    })
+
+    const listAppsPolicy = new PolicyStatement({
+      actions: ['sns:ListEndpointsByPlatformApplication'],
+      resources: [this.props.iosAppSns, this.props.androidAppSns],
+    })
+
+    const listSubscriptionsPolicy = new PolicyStatement({
+      actions: ['sns:ListSubscriptionsByTopic'],
+      resources: [notificationsTopic.topicArn],
     })
 
     const snsSubscribePolicy = new PolicyStatement({
@@ -392,18 +471,19 @@ export class BnMallorcaStack extends Stack {
     )
 
     const deleteDevicesPolicy = new PolicyStatement({
-      actions: ['sns:DeleteEndpoint', 'sns:ListEndpointsByPlatformApplication', 'sns:Unsubscribe'],
+      actions: ['sns:DeleteEndpoint', 'sns:Unsubscribe'],
       resources: ['*'],
-    })
-
-    const listSubscriptionsPolicy = new PolicyStatement({
-      actions: ['sns:ListSubscriptionsByTopic'],
-      resources: [notificationsTopic.topicArn],
     })
 
     deleteDevicesLambda.role?.attachInlinePolicy(
       new Policy(this, `${this.props.envName}-deleteDevicesPolicy`, {
-        statements: [deleteDevicesPolicy, listSubscriptionsPolicy],
+        statements: [deleteDevicesPolicy],
+      }),
+    )
+
+    findDisabledDevicesLambda.role?.attachInlinePolicy(
+      new Policy(this, `${this.props.envName}-findDisabledDevicesPolicy`, {
+        statements: [listSubscriptionsPolicy, listAppsPolicy],
       }),
     )
   }
