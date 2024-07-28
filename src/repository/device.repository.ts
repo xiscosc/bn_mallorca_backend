@@ -1,5 +1,6 @@
 import {
   BatchWriteCommand,
+  BatchWriteCommandInput,
   GetCommand,
   GetCommandInput,
   PutCommand,
@@ -51,6 +52,25 @@ export class DeviceRepository extends DynamoRepository {
     return (data.Items as DeviceDto[]) ?? []
   }
 
+  public async getNotRenewedDevices(status: number, ts: number): Promise<DeviceDto[]> {
+    const params = {
+      TableName: this.table,
+      IndexName: 'statusSubscribedAtIndex',
+      KeyConditionExpression: '#status = :status AND #subscribedAt <= :subscribedAt',
+      ExpressionAttributeNames: {
+        '#status': 'status',
+        '#subscribedAt': 'subscribedAt',
+      },
+      ExpressionAttributeValues: {
+        ':status': status,
+        ':subscribedAt': ts,
+      },
+    }
+
+    const data = await this.client.send(new QueryCommand(params))
+    return (data.Items as DeviceDto[]) ?? []
+  }
+
   public async deleteDevices(tokens: string[]) {
     if (tokens.length > 25 || tokens.length === 0) {
       return
@@ -65,6 +85,26 @@ export class DeviceRepository extends DynamoRepository {
     }))
 
     const params = {
+      RequestItems: {
+        [this.table]: requests,
+      },
+    }
+
+    await this.client.send(new BatchWriteCommand(params))
+  }
+
+  public async createDevices(devices: DeviceDto[]): Promise<void> {
+    if (devices.length > 25 || devices.length === 0) {
+      return
+    }
+
+    const requests = devices.map(device => ({
+      PutRequest: {
+        Item: device,
+      },
+    }))
+
+    const params: BatchWriteCommandInput = {
       RequestItems: {
         [this.table]: requests,
       },

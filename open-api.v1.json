@@ -177,6 +177,65 @@
         }
       }
     },
+    "/api/v1/schedule": {
+      "get": {
+        "summary": "Get the radio schedule",
+        "description": "Returns the full radio schedule",
+        "operationId": "getSchedule",
+        "tags": ["schedule"],
+        "responses": {
+          "200": {
+            "description": "A array of tracks",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "days": [
+                        {
+                          "numberOfTheWeek": 1,
+                          "shows": [
+                            {
+                              "name": "Waveform: The MKBHD Podcast",
+                              "artist": "MKBHD",
+                              "time": "20:00",
+                              "online": true,
+                              "podcastLink": "https://open.spotify.com/show/6o81QuW22s5m2nfcXWjucc?si=56b700034d0f4d0a",
+                              "albumArt": [
+                                {
+                                  "size": "640x640",
+                                  "downloadUrl": "https://podcasts.voxmedia.com/perch/resources/21vmpn011waveformsocial3000x3000.png"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error getting the track list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/register": {
       "post": {
         "tags": ["devices"],
@@ -237,6 +296,67 @@
           }
         }
       }
+    },
+    "/api/v1/unregister": {
+      "post": {
+        "tags": ["devices"],
+        "summary": "Unregister a device for stop getting notifications",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceToken"
+              },
+              "example": {
+                "type": "ios",
+                "token": "123456789"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The device was registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "Device unregistered"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Incorrect input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "Incorrect input"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error registering the device",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpMessage"
+                },
+                "example": {
+                  "message": "Error registering the device"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -246,6 +366,15 @@
         "properties": {
           "message": {
             "type": "string"
+          }
+        }
+      },
+      "ScheduleResponse": {
+        "type": "object",
+        "required": ["days"],
+        "properties": {
+          "days": {
+            "$ref": "#/components/schemas/Days"
           }
         }
       },
@@ -266,6 +395,13 @@
           }
         }
       },
+      "Days": {
+        "type": "array",
+        "maxItems": 100,
+        "items": {
+          "$ref": "#/components/schemas/Day"
+        }
+      },
       "Tracks": {
         "type": "array",
         "maxItems": 100,
@@ -283,6 +419,49 @@
           },
           "token": {
             "type": "string"
+          }
+        }
+      },
+      "Day": {
+        "type": "object",
+        "required": ["numberOfTheWeek", "shows"],
+        "properties": {
+          "numberOfTheWeek": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "shows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Show"
+            }
+          }
+        }
+      },
+      "Show": {
+        "type": "object",
+        "required": ["name", "artist", "time", "online", "albumArt", "podcastLink"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "artist": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "podcastLink": {
+            "type": "string"
+          },
+          "albumArt": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlbumArt"
+            }
           }
         }
       },

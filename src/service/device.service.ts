@@ -11,7 +11,9 @@ import {
   UnsubscribeCommand,
   Subscription,
 } from '@aws-sdk/client-sns'
+import { DateTime } from 'luxon'
 import { env } from '../config/env'
+import { getTs, getTsFromStart } from '../helpers/time.helper'
 import { DeviceRepository } from '../repository/device.repository'
 import { DeviceDto } from '../types/components.dto'
 import {} from 'aws-cdk-lib/aws-sns'
@@ -34,10 +36,9 @@ export class DeviceService {
     // Check if device is already registered
     const device = await this.repository.getDevice(token)
     if (device != null) {
-      if (device.status === DeviceStatus.DISABLED) {
-        device.status = DeviceStatus.ENABLED
-        await this.repository.putDevice(device)
-      }
+      device.status = DeviceStatus.ENABLED
+      device.subscribedAt = getTs()
+      await this.updateDevices([device])
     } else {
       const endpoint = await this.createEndpoint(token, type)
       const subscription = await this.createSubscription(endpoint)
@@ -47,6 +48,7 @@ export class DeviceService {
         status: DeviceStatus.ENABLED,
         endopintArn: endpoint,
         subscriptionArn: subscription,
+        subscribedAt: getTs(),
       }
       await this.repository.putDevice(newDevice)
     }
@@ -57,7 +59,7 @@ export class DeviceService {
     if (device != null) {
       if (device.status === DeviceStatus.ENABLED) {
         device.status = DeviceStatus.DISABLED
-        await this.repository.putDevice(device)
+        await this.updateDevices([device])
       }
       return { token, disabled: true }
     }
@@ -78,20 +80,7 @@ export class DeviceService {
     )
 
     await Promise.all(deleteEndpointPromises)
-
-    const tokenBatches = devices
-      .map(d => d.token)
-      .reduce((batches, item, index) => {
-        if (index % 25 === 0) {
-          batches.push([item])
-        } else {
-          batches[batches.length - 1]!.push(item)
-        }
-        return batches
-      }, [] as string[][])
-
-    const deleteDevicesPromises = tokenBatches.map(batch => this.repository.deleteDevices(batch))
-    await Promise.all(deleteDevicesPromises)
+    await this.deleteDevices(devices)
   }
 
   public async findDisabledDevices() {
@@ -113,6 +102,7 @@ export class DeviceService {
     const subscriptions = await this.getAllSubscrptions()
     const androidMap = new Map<string, { token: string; arn: string }>(androidToDelete.map(i => [i.arn, i]))
     const iosMap = new Map<string, { token: string; arn: string }>(iosToDelete.map(i => [i.arn, i]))
+    const startTs = getTsFromStart(DateTime.now().minus({ days: 1 }))
 
     subscriptions.forEach(s => {
       if (androidMap.has(s.Endpoint!)) {
@@ -122,6 +112,7 @@ export class DeviceService {
           status: DeviceStatus.DISABLED,
           endopintArn: androidMap.get(s.Endpoint!)!.arn,
           subscriptionArn: s.SubscriptionArn!,
+          subscribedAt: startTs,
         }
         devicesToDelete.push(device)
       } else if (iosMap.has(s.Endpoint!)) {
@@ -131,12 +122,34 @@ export class DeviceService {
           status: DeviceStatus.DISABLED,
           endopintArn: iosMap.get(s.Endpoint!)!.arn,
           subscriptionArn: s.SubscriptionArn!,
+          subscribedAt: startTs,
         }
         devicesToDelete.push(device)
       }
     })
 
-    await Promise.all(devicesToDelete.map(d => this.repository.putDevice(d)))
+    const notRenewedDevices = await this.repository.getNotRenewedDevices(DeviceStatus.ENABLED, startTs)
+    const notRenewedDevicesWithStatus = notRenewedDevices.map(d => ({ ...d, status: DeviceStatus.DISABLED }))
+
+    await this.saveDevices(devicesToDelete)
+    await this.updateDevices(notRenewedDevicesWithStatus)
+  }
+
+  private async updateDevices(devices: DeviceDto[]) {
+    await this.deleteDevices(devices)
+    await this.saveDevices(devices)
+  }
+
+  private async deleteDevices(devices: DeviceDto[]) {
+    const batches = DeviceService.getBatches(devices)
+    const deleteDevicesPromises = batches.map(batch => this.repository.deleteDevices(batch.map(d => d.token)))
+    await Promise.all(deleteDevicesPromises)
+  }
+
+  private async saveDevices(devices: DeviceDto[]) {
+    const batches = DeviceService.getBatches(devices)
+    const deleteDevicesPromises = batches.map(batch => this.repository.createDevices(batch))
+    await Promise.all(deleteDevicesPromises)
   }
 
   private async getAllSubscrptions(): Promise<Subscription[]> {
@@ -205,5 +218,16 @@ export class DeviceService {
       if (e.Attributes === undefined) return false
       return e.Attributes['Enabled'] === 'false'
     })
+  }
+
+  private static getBatches(devices: DeviceDto[], batchSize = 25): DeviceDto[][] {
+    return devices.reduce((batches, item, index) => {
+      if (index % batchSize === 0) {
+        batches.push([item])
+      } else {
+        batches[batches.length - 1]!.push(item)
+      }
+      return batches
+    }, [] as DeviceDto[][])
   }
 }

@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { getTs } from './time.helper'
 import { Track } from '../types/components'
 
 export function getTrackId(track: Track): string {
@@ -6,7 +7,7 @@ export function getTrackId(track: Track): string {
 }
 
 export function getTrackTs(): number {
-  return Math.floor(Date.now() / 1000)
+  return getTs()
 }
 
 export function isBNTrack(track: Track): boolean {

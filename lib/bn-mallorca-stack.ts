@@ -72,6 +72,12 @@ export class BnMallorcaStack extends Stack {
       sortKey: { name: 'token', type: AttributeType.STRING },
     })
 
+    deviceTable.addGlobalSecondaryIndex({
+      indexName: 'statusSubscribedAtIndex',
+      partitionKey: { name: 'status', type: AttributeType.NUMBER },
+      sortKey: { name: 'subscribedAt', type: AttributeType.NUMBER },
+    })
+
     /**
      * Queue
      */

@@ -18,4 +18,5 @@ export type DeviceDto = {
   type: string
   endopintArn: string
   subscriptionArn: string
+  subscribedAt: number
 }
