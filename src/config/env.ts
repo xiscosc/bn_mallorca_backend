@@ -1,5 +1,6 @@
 export const env = {
   albumArtTable: process.env['ALBUM_ART_TABLE'] ?? '',
+  scheduleTable: process.env['SCHEDULE_TABLE'] ?? '',
   albumArtBucket: process.env['ALBUM_ART_BUCKET'] ?? '',
   trackListTable: process.env['TRACK_LIST_TABLE'] ?? '',
   deviceTable: process.env['DEVICE_TABLE'] ?? '',

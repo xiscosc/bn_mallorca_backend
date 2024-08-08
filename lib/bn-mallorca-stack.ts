@@ -78,6 +78,12 @@ export class BnMallorcaStack extends Stack {
       sortKey: { name: 'subscribedAt', type: AttributeType.NUMBER },
     })
 
+    const scheduleTable = new Table(this, `${this.props.envName}-scheduleTable`, {
+      tableName: `${this.props.envName}-scheduleTable`,
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      partitionKey: { name: 'id', type: AttributeType.STRING },
+    })
+
     /**
      * Queue
      */
@@ -180,6 +186,24 @@ export class BnMallorcaStack extends Stack {
         ALBUM_ART_BUCKET: albumArtBucket.bucketName,
         TRACK_LIST_TABLE: trackListTable.tableName,
         ALBUM_ART_TABLE: albumArtTable.tableName,
+      },
+      bundling: {
+        minify: true,
+        sourceMap: true,
+      },
+    })
+
+    const getScheduleLambda = new NodejsFunction(this, `${this.props.envName}-getScheduleLambda`, {
+      runtime: Runtime.NODEJS_20_X,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 256,
+      functionName: `${this.props.envName}-getScheduleLambda`,
+      entry: `${LAMBDA_DIR}get-schedule.lambda.ts`,
+      timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
+      environment: {
+        SCHEDULE_TABLE: scheduleTable.tableName,
       },
       bundling: {
         minify: true,
@@ -357,8 +381,10 @@ export class BnMallorcaStack extends Stack {
     const postTrackIntegration = new LambdaIntegration(postNewTrackLambda)
     const registerDeviceIntegration = new LambdaIntegration(registerDeviceLambda)
     const unregisterDeviceIntegration = new LambdaIntegration(unregisterDeviceLambda)
+    const getScheduleIntegration = new LambdaIntegration(getScheduleLambda)
     const apiV1 = api.root.addResource('api').addResource('v1')
     const trackListResource = apiV1.addResource('tracklist')
+    const scheduleResource = apiV1.addResource('schedule')
     const registerResource = apiV1.addResource('register')
     const unregisterResource = apiV1.addResource('unregister')
     trackListResource.addMethod('GET', getTrackListIntegration)
@@ -366,6 +392,7 @@ export class BnMallorcaStack extends Stack {
       authorizationType: AuthorizationType.CUSTOM,
       authorizer,
     })
+    scheduleResource.addMethod('GET', getScheduleIntegration)
     registerResource.addMethod('POST', registerDeviceIntegration)
     unregisterResource.addMethod('POST', unregisterDeviceIntegration)
 
@@ -426,6 +453,8 @@ export class BnMallorcaStack extends Stack {
     trackListTable.grantWriteData(processNewTrackLambda)
     trackListTable.grantReadData(getTackListLambda)
     trackListTable.grantReadWriteData(pollNewTrackLambda)
+
+    scheduleTable.grantReadData(getScheduleLambda)
 
     albumArtTable.grantWriteData(cacheAlbumArtLambda)
     albumArtTable.grantReadData(processNewTrackLambda)

@@ -16,7 +16,6 @@ import { env } from '../config/env'
 import { getTs, getTsFromStart } from '../helpers/time.helper'
 import { DeviceRepository } from '../repository/device.repository'
 import { DeviceDto } from '../types/components.dto'
-import {} from 'aws-cdk-lib/aws-sns'
 
 enum DeviceStatus {
   ENABLED = 1,
