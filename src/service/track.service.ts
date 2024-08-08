@@ -29,6 +29,10 @@ export class TrackService {
     return await getCurrentTrackFromCentova()
   }
 
+  public static filterOutAds(trackList: TrackList): TrackList {
+    return trackList.filter((t: Track) => !isBNTrack(t))
+  }
+
   public async processTrack(centovaTrack: Track): Promise<Track> {
     const processedTrack: Track = {
       ...centovaTrack,
@@ -52,17 +56,19 @@ export class TrackService {
     return processedTrack
   }
 
-  public async getTrackList(limit: number): Promise<TrackList> {
+  public async getTrackList(limit: number, lastTrack?: number): Promise<{ trackList: TrackList; lastKey?: number }> {
     if (limit <= 0 || limit > 25) {
       throw Error('Limit is not between 1 and 25')
     }
 
-    const tracksDto = await this.trackListRepository.getLastTracks(limit)
-    return await Promise.all(tracksDto.map(t => this.trackDtoToModel(t)))
+    const { tracksDto, lastKey } = await this.trackListRepository.getLastTracks(limit, lastTrack)
+    const trackList = await Promise.all(tracksDto.map(t => this.trackDtoToModel(t)))
+    return { trackList, lastKey }
   }
 
   public async trackHasChanged(centovaTrack: Track): Promise<boolean> {
-    const trackDto = (await this.trackListRepository.getLastTracks(1))[0]
+    const { tracksDto } = await this.trackListRepository.getLastTracks(1)
+    const trackDto = tracksDto[0]
     if (trackDto === undefined) return true
     return getTrackId(centovaTrack) !== trackDto.id
   }

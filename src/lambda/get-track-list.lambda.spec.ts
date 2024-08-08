@@ -80,10 +80,10 @@ test('when service returns error, it returns internal server error ', async () =
 })
 
 async function testCorrectScenario(event: APIGatewayEvent, limit: number) {
-  when(TrackService.prototype.getTrackList).mockResolvedValue([track])
+  when(TrackService.prototype.getTrackList).mockResolvedValue({ trackList: [track] })
   const response = await handler(event)
   expect(TrackService.prototype.getTrackList).toBeCalledTimes(1)
-  expect(TrackService.prototype.getTrackList).toBeCalledWith(limit)
+  expect(TrackService.prototype.getTrackList).toBeCalledWith(limit, undefined)
   expect(response.statusCode).toBe(200)
   const body: TrackListResponse = JSON.parse(response.body)
   expect(body.count).toBe(1)

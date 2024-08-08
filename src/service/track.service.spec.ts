@@ -10,7 +10,7 @@ import { publishToSns } from '../net/sns'
 import { getSpotifyResults } from '../net/spotify'
 import { AlbumArtRepository } from '../repository/album-art.repository'
 import { TrackListRepository } from '../repository/track-list.repository'
-import { AlbumArt, Track, TrackList } from '../types/components'
+import { AlbumArt, Track } from '../types/components'
 import { AlbumArtDto, TrackDto } from '../types/components.dto'
 
 jest.mock('../repository/album-art.repository')
@@ -336,9 +336,9 @@ test('gettting track list - invalid limit value', async () => {
 })
 
 test('gettting track list - no data in db', async () => {
-  when(TrackListRepository.prototype.getLastTracks).mockResolvedValue([])
-  const result = await service.getTrackList(25)
-  expect(result.length).toEqual(0)
+  when(TrackListRepository.prototype.getLastTracks).mockResolvedValue({ tracksDto: [] })
+  const { trackList } = await service.getTrackList(25)
+  expect(trackList.length).toEqual(0)
   expect(isBNTrack).toBeCalledTimes(0)
   expect(AlbumArtRepository.prototype.getAlbumArt).toBeCalledTimes(0)
   expect(getAlbumArtWithUrl).toBeCalledTimes(0)
@@ -346,10 +346,10 @@ test('gettting track list - no data in db', async () => {
 
 test('getting track list - bn mallorca track', async () => {
   when(isBNTrack).mockReturnValue(true)
-  when(TrackListRepository.prototype.getLastTracks).mockResolvedValue([dtoTrack])
-  const result: TrackList = await service.getTrackList(25)
-  expect(result.length).toEqual(1)
-  const resultTrack: Track = result[0]!!
+  when(TrackListRepository.prototype.getLastTracks).mockResolvedValue({ tracksDto: [dtoTrack] })
+  const { trackList } = await service.getTrackList(25)
+  expect(trackList.length).toEqual(1)
+  const resultTrack: Track = trackList[0]!!
   expect(resultTrack.id).toEqual(id)
   expect(resultTrack.timestamp).toEqual(ts)
   expect(resultTrack.name).toEqual(centovaTrack.name)
@@ -362,11 +362,11 @@ test('getting track list - bn mallorca track', async () => {
 
 test('getting track list - normal track without album art', async () => {
   when(isBNTrack).mockReturnValue(false)
-  when(TrackListRepository.prototype.getLastTracks).mockResolvedValue([dtoTrack])
+  when(TrackListRepository.prototype.getLastTracks).mockResolvedValue({ tracksDto: [dtoTrack] })
   when(AlbumArtRepository.prototype.getAlbumArt).mockResolvedValue(undefined)
-  const result: TrackList = await service.getTrackList(4)
-  expect(result.length).toEqual(1)
-  const resultTrack: Track = result[0]!!
+  const { trackList } = await service.getTrackList(4)
+  expect(trackList.length).toEqual(1)
+  const resultTrack: Track = trackList[0]!!
   expect(resultTrack.id).toEqual(id)
   expect(resultTrack.timestamp).toEqual(ts)
   expect(resultTrack.name).toEqual(centovaTrack.name)
@@ -379,11 +379,11 @@ test('getting track list - normal track without album art', async () => {
 
 test('getting track list - normal track with album art', async () => {
   when(isBNTrack).mockReturnValue(false)
-  when(TrackListRepository.prototype.getLastTracks).mockResolvedValue([dtoTrack])
+  when(TrackListRepository.prototype.getLastTracks).mockResolvedValue({ tracksDto: [dtoTrack] })
   when(AlbumArtRepository.prototype.getAlbumArt).mockResolvedValue(dtoArt)
-  const result: TrackList = await service.getTrackList(25)
-  expect(result.length).toEqual(1)
-  const resultTrack: Track = result[0]!!
+  const { trackList } = await service.getTrackList(25)
+  expect(trackList.length).toEqual(1)
+  const resultTrack: Track = trackList[0]!!
   expect(resultTrack.id).toEqual(id)
   expect(resultTrack.timestamp).toEqual(ts)
   expect(resultTrack.name).toEqual(centovaTrack.name)
