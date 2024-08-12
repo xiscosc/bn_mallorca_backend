@@ -79,7 +79,7 @@ export class DeviceRepository extends DynamoRepository {
     const requests = tokens.map(t => ({
       DeleteRequest: {
         Key: {
-          PartitionKey: t,
+          PartitionKey: { token: t },
         },
       },
     }))
