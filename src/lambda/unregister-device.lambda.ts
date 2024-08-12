@@ -20,7 +20,7 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
     await deviceService.unregisterDevice(tokenInfo.token)
     return ok({ message: 'Device registered' })
   } catch (err: any) {
-    log.error(`Error registering device: ${err.toString()}`)
+    log.error(`Error unregistering device: ${err.toString()}`)
     return internalServerError({ message: 'Device could not be unregistered' })
   }
 }
