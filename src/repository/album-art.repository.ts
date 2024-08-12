@@ -3,7 +3,7 @@ import { DynamoRepository } from './dynamo-repository'
 import { env } from '../config/env'
 import { AlbumArtDto } from '../types/components.dto'
 
-export class AlbumArtRepository extends DynamoRepository {
+export class AlbumArtRepository extends DynamoRepository<AlbumArtDto> {
   constructor() {
     super(env.albumArtTable)
   }
