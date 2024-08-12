@@ -140,15 +140,11 @@ export class DeviceService {
   }
 
   private async deleteDevices(devices: DeviceDto[]) {
-    const batches = DeviceService.getBatches(devices)
-    const deleteDevicesPromises = batches.map(batch => this.repository.deleteDevices(batch.map(d => d.token)))
-    await Promise.all(deleteDevicesPromises)
+    await this.repository.deleteDevices(devices.map(d => d.token))
   }
 
   private async saveDevices(devices: DeviceDto[]) {
-    const batches = DeviceService.getBatches(devices)
-    const deleteDevicesPromises = batches.map(batch => this.repository.createDevices(batch))
-    await Promise.all(deleteDevicesPromises)
+    await this.repository.createDevices(devices)
   }
 
   private async getAllSubscrptions(): Promise<Subscription[]> {
@@ -217,16 +213,5 @@ export class DeviceService {
       if (e.Attributes === undefined) return false
       return e.Attributes['Enabled'] === 'false'
     })
-  }
-
-  private static getBatches(devices: DeviceDto[], batchSize = 25): DeviceDto[][] {
-    return devices.reduce((batches, item, index) => {
-      if (index % batchSize === 0) {
-        batches.push([item])
-      } else {
-        batches[batches.length - 1]!.push(item)
-      }
-      return batches
-    }, [] as DeviceDto[][])
   }
 }

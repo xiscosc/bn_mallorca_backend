@@ -4,7 +4,7 @@ import { DynamoRepository } from './dynamo-repository'
 import { env } from '../config/env'
 import { ShowDto } from '../types/components.dto'
 
-export class ScheduleRepository extends DynamoRepository {
+export class ScheduleRepository extends DynamoRepository<ShowDto> {
   constructor() {
     super(env.scheduleTable)
   }

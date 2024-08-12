@@ -1,18 +1,10 @@
-import {
-  BatchWriteCommand,
-  BatchWriteCommandInput,
-  GetCommand,
-  GetCommandInput,
-  PutCommand,
-  PutCommandInput,
-  QueryCommand,
-} from '@aws-sdk/lib-dynamodb'
+import { GetCommand, GetCommandInput, PutCommand, PutCommandInput, QueryCommand } from '@aws-sdk/lib-dynamodb'
 
 import { DynamoRepository } from './dynamo-repository'
 import { env } from '../config/env'
 import { DeviceDto } from '../types/components.dto'
 
-export class DeviceRepository extends DynamoRepository {
+export class DeviceRepository extends DynamoRepository<DeviceDto> {
   constructor() {
     super(env.deviceTable)
   }
@@ -36,20 +28,7 @@ export class DeviceRepository extends DynamoRepository {
   }
 
   public async getDevicesByStatus(status: number): Promise<DeviceDto[]> {
-    const params = {
-      TableName: this.table,
-      IndexName: 'statusIndex',
-      KeyConditionExpression: '#partitionKey = :partitionValue',
-      ExpressionAttributeNames: {
-        '#partitionKey': 'status',
-      },
-      ExpressionAttributeValues: {
-        ':partitionValue': status,
-      },
-    }
-
-    const data = await this.client.send(new QueryCommand(params))
-    return (data.Items as DeviceDto[]) ?? []
+    return await this.getBySecondaryIndexWithSortKey('statusIndex', 'status', status, false)
   }
 
   public async getNotRenewedDevices(status: number, ts: number): Promise<DeviceDto[]> {
@@ -72,44 +51,11 @@ export class DeviceRepository extends DynamoRepository {
   }
 
   public async deleteDevices(tokens: string[]) {
-    if (tokens.length > 25 || tokens.length === 0) {
-      return
-    }
-
-    const requests = tokens.map(t => ({
-      DeleteRequest: {
-        Key: {
-          PartitionKey: { token: t },
-        },
-      },
-    }))
-
-    const params = {
-      RequestItems: {
-        [this.table]: requests,
-      },
-    }
-
-    await this.client.send(new BatchWriteCommand(params))
+    const requests = tokens.map(t => ({ partitionKey: t }))
+    await this.batchDelete(requests, 'token')
   }
 
   public async createDevices(devices: DeviceDto[]): Promise<void> {
-    if (devices.length > 25 || devices.length === 0) {
-      return
-    }
-
-    const requests = devices.map(device => ({
-      PutRequest: {
-        Item: device,
-      },
-    }))
-
-    const params: BatchWriteCommandInput = {
-      RequestItems: {
-        [this.table]: requests,
-      },
-    }
-
-    await this.client.send(new BatchWriteCommand(params))
+    await this.batchPut(devices)
   }
 }

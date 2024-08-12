@@ -3,7 +3,7 @@ import { DynamoRepository } from './dynamo-repository'
 import { env } from '../config/env'
 import { TrackDto } from '../types/components.dto'
 
-export class TrackListRepository extends DynamoRepository {
+export class TrackListRepository extends DynamoRepository<TrackDto> {
   constructor() {
     super(env.trackListTable)
   }
