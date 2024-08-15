@@ -428,10 +428,10 @@ export class BnMallorcaStack extends Stack {
       })
       pollingEventRule.addTarget(new LambdaFunction(fillQueueLambda))
 
-      const cleaningEventRule = new Rule(this, `${this.props.envName}-cleaningEventRule`, {
-        schedule: Schedule.cron({ hour: '*' }),
-      })
-      cleaningEventRule.addTarget(new LambdaFunction(deleteDevicesLambda))
+      // const cleaningEventRule = new Rule(this, `${this.props.envName}-cleaningEventRule`, {
+      //   schedule: Schedule.cron({ hour: '*' }),
+      // })
+      // cleaningEventRule.addTarget(new LambdaFunction(deleteDevicesLambda))
 
       const findDisabledDevicesRule = new Rule(this, `${this.props.envName}-findDisabledDevicesRule`, {
         schedule: Schedule.cron({ minute: '0', hour: '3' }),
