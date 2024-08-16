@@ -31,7 +31,7 @@ export class ScheduleService {
   private static transformShowDtoToModel(dto: ShowDto): Show {
     return {
       name: dto.name,
-      artist: dto.name,
+      artist: dto.artist,
       time: `${ScheduleService.formatInteger(dto.hour)}:${ScheduleService.formatInteger(dto.minute)}`,
       online: dto.online,
       podcastLink: dto.podcastUrl,
