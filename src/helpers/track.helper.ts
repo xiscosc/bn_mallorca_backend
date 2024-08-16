@@ -19,6 +19,7 @@ export function isBNTrack(track: Track): boolean {
     'bn mca radio',
     'en bn mca radio',
     'unknown',
+    'nos saluda',
   ]
   return bnNames.indexOf(track.name.toLowerCase()) > -1 || bnNames.indexOf(track.artist.toLowerCase()) > -1
 }
