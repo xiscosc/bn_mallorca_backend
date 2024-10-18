@@ -14,3 +14,5 @@ Backend and infrastructure for the BN Mallorca Radio App.
 ![docs/albumartcache.png](docs/albumartcache.png)
 ### Device subscription
 ![docs/subscriptions.png](docs/subscriptions.png)
+### Other Endpoints
+![docs/otherapi.png](docs/otherapi.png)

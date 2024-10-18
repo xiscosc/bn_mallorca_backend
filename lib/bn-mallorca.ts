@@ -7,7 +7,6 @@ export class BnMallorcaApp extends App {
 
     const props = {
       envName: BnMallorcaApp.getFromEnv('ENV_NAME'),
-      jwtSecretArn: BnMallorcaApp.getFromEnv('JWT_SECRET_ARN'),
       spotifyClientIdArn: BnMallorcaApp.getFromEnv('SPOTIFY_CLIENT_ID_ARN'),
       spotifySecretArn: BnMallorcaApp.getFromEnv('SPOTIFY_SECRET_ID_ARN'),
       apiDomainName: BnMallorcaApp.getFromEnv('API_DOMAIN_NAME'),

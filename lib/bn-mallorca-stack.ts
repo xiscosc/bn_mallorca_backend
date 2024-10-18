@@ -1,13 +1,5 @@
 import { Duration, Stack, StackProps } from 'aws-cdk-lib'
-import {
-  AuthorizationType,
-  BasePathMapping,
-  DomainName,
-  EndpointType,
-  LambdaIntegration,
-  RestApi,
-  TokenAuthorizer,
-} from 'aws-cdk-lib/aws-apigateway'
+import { BasePathMapping, DomainName, EndpointType, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events'
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets'
@@ -24,7 +16,6 @@ import { Construct } from 'constructs'
 
 interface BnMallorcaStackProps extends StackProps {
   envName: string
-  jwtSecretArn: string
   spotifyClientIdArn: string
   spotifySecretArn: string
   apiDomainName: string
@@ -112,23 +103,6 @@ export class BnMallorcaStack extends Stack {
     /**
      *  Lambda functions
      */
-    const authorizerLambda = new NodejsFunction(this, `${this.props.envName}-authorizerLambda`, {
-      runtime: Runtime.NODEJS_20_X,
-      architecture: Architecture.ARM_64,
-      handler: 'handler',
-      memorySize: 128,
-      functionName: `${this.props.envName}-authorizerLambda`,
-      entry: `${LAMBDA_DIR}api-authorizer.lambda.ts`,
-      timeout: Duration.seconds(10),
-      logRetention: RetentionDays.ONE_MONTH,
-      environment: {
-        JWT_SECRET_ARN: this.props.jwtSecretArn,
-      },
-      bundling: {
-        minify: true,
-        sourceMap: true,
-      },
-    })
 
     const cacheAlbumArtLambda = new NodejsFunction(this, `${this.props.envName}-cacheAlbumArtLambda`, {
       runtime: Runtime.NODEJS_20_X,
@@ -204,24 +178,6 @@ export class BnMallorcaStack extends Stack {
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
         SCHEDULE_TABLE: scheduleTable.tableName,
-      },
-      bundling: {
-        minify: true,
-        sourceMap: true,
-      },
-    })
-
-    const postNewTrackLambda = new NodejsFunction(this, `${this.props.envName}-postNewTrackLambda`, {
-      runtime: Runtime.NODEJS_20_X,
-      architecture: Architecture.ARM_64,
-      handler: 'handler',
-      memorySize: 128,
-      functionName: `${this.props.envName}-postNewTrackLambda`,
-      entry: `${LAMBDA_DIR}post-new-track.lambda.ts`,
-      timeout: Duration.seconds(10),
-      logRetention: RetentionDays.ONE_MONTH,
-      environment: {
-        PROCESS_LAMBDA_ARN: processNewTrackLambda.functionArn,
       },
       bundling: {
         minify: true,
@@ -372,13 +328,7 @@ export class BnMallorcaStack extends Stack {
       domainNameAliasTarget: this.props.apiDomainAPIGatewayDomainName,
     })
 
-    const authorizer = new TokenAuthorizer(this, `${this.props.envName}-apiAuthorizer`, {
-      handler: authorizerLambda,
-      identitySource: 'method.request.header.Authorization',
-    })
-
     const getTrackListIntegration = new LambdaIntegration(getTackListLambda)
-    const postTrackIntegration = new LambdaIntegration(postNewTrackLambda)
     const registerDeviceIntegration = new LambdaIntegration(registerDeviceLambda)
     const unregisterDeviceIntegration = new LambdaIntegration(unregisterDeviceLambda)
     const getScheduleIntegration = new LambdaIntegration(getScheduleLambda)
@@ -388,10 +338,7 @@ export class BnMallorcaStack extends Stack {
     const registerResource = apiV1.addResource('register')
     const unregisterResource = apiV1.addResource('unregister')
     trackListResource.addMethod('GET', getTrackListIntegration)
-    trackListResource.addMethod('POST', postTrackIntegration, {
-      authorizationType: AuthorizationType.CUSTOM,
-      authorizer,
-    })
+
     scheduleResource.addMethod('GET', getScheduleIntegration)
     registerResource.addMethod('POST', registerDeviceIntegration)
     unregisterResource.addMethod('POST', unregisterDeviceIntegration)
@@ -406,7 +353,6 @@ export class BnMallorcaStack extends Stack {
     /**
      * Secrets Manager
      */
-    const jwtSecret = Secret.fromSecretCompleteArn(this, `${this.props.envName}-jwt-secret`, this.props.jwtSecretArn)
     const spotifyClientId = Secret.fromSecretCompleteArn(
       this,
       `${this.props.envName}-spotify-client-id`,
@@ -445,7 +391,6 @@ export class BnMallorcaStack extends Stack {
     /**
      *  Permissions
      */
-    processNewTrackLambda.grantInvoke(postNewTrackLambda)
 
     cacheAlbumArtLambda.grantInvoke(processNewTrackLambda)
     cacheAlbumArtLambda.grantInvoke(pollNewTrackLambda)
@@ -466,7 +411,6 @@ export class BnMallorcaStack extends Stack {
     notificationsTopic.grantPublish(processNewTrackLambda)
     notificationsTopic.grantPublish(pollNewTrackLambda)
 
-    jwtSecret.grantRead(authorizerLambda)
     spotifySecret.grantRead(processNewTrackLambda)
     spotifySecret.grantRead(pollNewTrackLambda)
     spotifyClientId.grantRead(processNewTrackLambda)

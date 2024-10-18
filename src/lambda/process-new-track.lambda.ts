@@ -3,6 +3,7 @@ import { stringIsValid } from '../helpers/lambda.helper'
 import { TrackService } from '../service/track.service'
 import { Track } from '../types/components'
 
+// For testing purposes
 const trackService = new TrackService()
 export async function handler(track?: Track): Promise<any> {
   if (track === undefined || !stringIsValid(track.artist) || !stringIsValid(track.name)) {
