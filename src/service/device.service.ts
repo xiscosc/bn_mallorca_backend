@@ -2,22 +2,19 @@ import {
   CreatePlatformEndpointCommand,
   CreatePlatformEndpointCommandInput,
   DeleteEndpointCommand,
-  Endpoint,
-  ListEndpointsByPlatformApplicationCommand,
-  ListSubscriptionsByTopicCommand,
   SNSClient,
   SubscribeCommand,
   SubscribeCommandInput,
   UnsubscribeCommand,
-  Subscription,
 } from '@aws-sdk/client-sns'
+import * as log from 'lambda-log'
 import { DateTime } from 'luxon'
 import { env } from '../config/env'
 import { getTs, getTsFromStart } from '../helpers/time.helper'
 import { DeviceRepository } from '../repository/device.repository'
 import { DeviceDto } from '../types/components.dto'
 
-enum DeviceStatus {
+export enum DeviceStatus {
   ENABLED = 1,
   DISABLED = 2,
 }
@@ -37,7 +34,7 @@ export class DeviceService {
     if (device != null) {
       device.status = DeviceStatus.ENABLED
       device.subscribedAt = getTs()
-      await this.updateDevices([device])
+      await this.saveDevices([device])
     } else {
       const endpoint = await this.createEndpoint(token, type)
       const subscription = await this.createSubscription(endpoint)
@@ -58,7 +55,7 @@ export class DeviceService {
     if (device != null) {
       if (device.status === DeviceStatus.ENABLED) {
         device.status = DeviceStatus.DISABLED
-        await this.updateDevices([device])
+        await this.saveDevices([device])
       }
       return { token, disabled: true }
     }
@@ -68,75 +65,34 @@ export class DeviceService {
 
   public async cleanDevices() {
     const devices = await this.repository.getDevicesByStatus(DeviceStatus.DISABLED)
-    const deleteSubscriptionPromises = devices.map(d =>
-      this.snsClient.send(new UnsubscribeCommand({ SubscriptionArn: d.subscriptionArn })),
-    )
-
+    const deleteSubscriptionPromises = devices.map(d => this.deleteSubscription(d.subscriptionArn))
     await Promise.all(deleteSubscriptionPromises)
-
-    const deleteEndpointPromises = devices.map(d =>
-      this.snsClient.send(new DeleteEndpointCommand({ EndpointArn: d.endopintArn })),
-    )
-
+    const deleteEndpointPromises = devices.map(d => this.deleteEndpoint(d.endopintArn))
     await Promise.all(deleteEndpointPromises)
     await this.deleteDevices(devices)
   }
 
-  public async findDisabledDevices() {
-    const disabledAndroidTokens = await this.getDisabledEndpointTokens('android')
-    const disabledIosTokens = await this.getDisabledEndpointTokens('ios')
-    const disablePromises = [...disabledAndroidTokens, ...disabledIosTokens].map(endpoint =>
-      this.unregisterDevice(endpoint.token),
-    )
-    const results = await Promise.all(disablePromises)
-    const orphanResults = results.filter(r => r.disabled === false).map(r => r.token)
-    if (orphanResults.length === 0) {
-      return
-    }
-
-    const tokenSet = new Set(orphanResults)
-    const androidToDelete = disabledAndroidTokens.filter(t => tokenSet.has(t.token))
-    const iosToDelete = disabledIosTokens.filter(t => tokenSet.has(t.token))
-    const devicesToDelete: DeviceDto[] = []
-    const subscriptions = await this.getAllSubscrptions()
-    const androidMap = new Map<string, { token: string; arn: string }>(androidToDelete.map(i => [i.arn, i]))
-    const iosMap = new Map<string, { token: string; arn: string }>(iosToDelete.map(i => [i.arn, i]))
+  public async markUnactiveDevices() {
     const startTs = getTsFromStart(DateTime.now().minus({ days: 1 }))
-
-    subscriptions.forEach(s => {
-      if (androidMap.has(s.Endpoint!)) {
-        const device = {
-          token: androidMap.get(s.Endpoint!)!.token,
-          type: 'android',
-          status: DeviceStatus.DISABLED,
-          endopintArn: androidMap.get(s.Endpoint!)!.arn,
-          subscriptionArn: s.SubscriptionArn!,
-          subscribedAt: startTs,
-        }
-        devicesToDelete.push(device)
-      } else if (iosMap.has(s.Endpoint!)) {
-        const device = {
-          token: iosMap.get(s.Endpoint!)!.token,
-          type: 'ios',
-          status: DeviceStatus.DISABLED,
-          endopintArn: iosMap.get(s.Endpoint!)!.arn,
-          subscriptionArn: s.SubscriptionArn!,
-          subscribedAt: startTs,
-        }
-        devicesToDelete.push(device)
-      }
-    })
-
     const notRenewedDevices = await this.repository.getNotRenewedDevices(DeviceStatus.ENABLED, startTs)
     const notRenewedDevicesWithStatus = notRenewedDevices.map(d => ({ ...d, status: DeviceStatus.DISABLED }))
-
-    await this.saveDevices(devicesToDelete)
-    await this.updateDevices(notRenewedDevicesWithStatus)
+    await this.saveDevices(notRenewedDevicesWithStatus)
   }
 
-  private async updateDevices(devices: DeviceDto[]) {
-    await this.deleteDevices(devices)
-    await this.saveDevices(devices)
+  private async deleteSubscription(arn: string) {
+    try {
+      await this.snsClient.send(new UnsubscribeCommand({ SubscriptionArn: arn }))
+    } catch (e: any) {
+      log.error(`error deleting subscription ${arn} - ${e}`)
+    }
+  }
+
+  private async deleteEndpoint(arn: string) {
+    try {
+      await this.snsClient.send(new DeleteEndpointCommand({ EndpointArn: arn }))
+    } catch (e: any) {
+      log.error(`error deleting endpoint ${arn} - ${e}`)
+    }
   }
 
   private async deleteDevices(devices: DeviceDto[]) {
@@ -145,43 +101,6 @@ export class DeviceService {
 
   private async saveDevices(devices: DeviceDto[]) {
     await this.repository.createDevices(devices)
-  }
-
-  private async getAllSubscrptions(): Promise<Subscription[]> {
-    const result = await this.snsClient.send(
-      new ListSubscriptionsByTopicCommand({ TopicArn: env.notificationTopicArn }),
-    )
-    const subscriptions = result.Subscriptions ?? []
-    let next = result.NextToken
-    while (next !== undefined) {
-      const newResult = await this.snsClient.send(
-        new ListSubscriptionsByTopicCommand({ TopicArn: env.notificationTopicArn, NextToken: next }),
-      )
-      next = newResult.NextToken
-      subscriptions.push(...(newResult.Subscriptions ?? []))
-    }
-
-    return subscriptions
-  }
-
-  private async getDisabledEndpointTokens(type: string): Promise<{ token: string; arn: string }[]> {
-    const snsApp = type === 'ios' ? env.iosAppSns : env.androidAppSns
-
-    // Get disabled endpoints
-    const result = await this.snsClient.send(
-      new ListEndpointsByPlatformApplicationCommand({ PlatformApplicationArn: snsApp }),
-    )
-    const disabledEndpoints = DeviceService.getDisabledEndpoints(result.Endpoints)
-    let next = result.NextToken
-    while (next !== undefined) {
-      const newResult = await this.snsClient.send(
-        new ListEndpointsByPlatformApplicationCommand({ PlatformApplicationArn: snsApp, NextToken: next }),
-      )
-      next = newResult.NextToken
-      disabledEndpoints.push(...DeviceService.getDisabledEndpoints(newResult.Endpoints))
-    }
-
-    return disabledEndpoints.map(e => ({ token: e.Attributes!['Token']!, arn: e.EndpointArn! }))
   }
 
   private async createEndpoint(token: string, type: string): Promise<string> {
@@ -204,14 +123,5 @@ export class DeviceService {
 
     const result = await this.snsClient.send(new SubscribeCommand(subscriptionParams))
     return result.SubscriptionArn!
-  }
-
-  private static getDisabledEndpoints(endpoints?: Endpoint[]): Endpoint[] {
-    if (endpoints === undefined) return []
-    return endpoints.filter(e => {
-      if (e.EndpointArn === undefined) return false
-      if (e.Attributes === undefined) return false
-      return e.Attributes['Enabled'] === 'false'
-    })
   }
 }
