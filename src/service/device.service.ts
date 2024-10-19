@@ -65,11 +65,13 @@ export class DeviceService {
 
   public async cleanDevices() {
     const devices = await this.repository.getDevicesByStatus(DeviceStatus.DISABLED)
-    const deleteSubscriptionPromises = devices.map(d => this.deleteSubscription(d.subscriptionArn))
-    await Promise.all(deleteSubscriptionPromises)
-    const deleteEndpointPromises = devices.map(d => this.deleteEndpoint(d.endopintArn))
-    await Promise.all(deleteEndpointPromises)
-    await this.deleteDevices(devices)
+    if (devices.length > 0) {
+      const deleteSubscriptionPromises = devices.map(d => this.deleteSubscription(d.subscriptionArn))
+      await Promise.all(deleteSubscriptionPromises)
+      const deleteEndpointPromises = devices.map(d => this.deleteEndpoint(d.endopintArn))
+      await Promise.all(deleteEndpointPromises)
+      await this.deleteDevices(devices)
+    }
   }
 
   public async markUnactiveDevices() {
