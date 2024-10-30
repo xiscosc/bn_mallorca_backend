@@ -1,9 +1,9 @@
 import { APIGatewayEvent } from 'aws-lambda'
 import { when } from 'jest-when'
-import { handler } from './get-track-list.lambda'
-import { requestContext } from '../helpers/test.helper'
-import { TrackService } from '../service/track.service'
-import { Track, TrackListResponse } from '../types/components'
+import { handler } from './lambda'
+import { requestContext } from '../../../../../helpers/test.helper'
+import { TrackService } from '../../../../../service/track.service'
+import { Track, TrackListResponse } from '../../../../../types/components'
 
 jest.mock('lambda-log')
 jest.mock('../service/track.service')

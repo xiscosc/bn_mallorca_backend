@@ -1,7 +1,7 @@
 import * as log from 'lambda-log'
-import { stringIsValid } from '../helpers/lambda.helper'
-import { TrackService } from '../service/track.service'
-import { Track } from '../types/components'
+import { stringIsValid } from '../../../helpers/lambda.helper'
+import { TrackService } from '../../../service/track.service'
+import { Track } from '../../../types/components'
 
 export async function handler(track?: Track): Promise<any> {
   if (track === undefined || !stringIsValid(track.id) || track.albumArt === undefined || track.albumArt.length === 0) {

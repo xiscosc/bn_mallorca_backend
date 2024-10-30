@@ -1,7 +1,7 @@
 import { SendMessageBatchCommand, SendMessageBatchCommandInput, SQSClient } from '@aws-sdk/client-sqs'
 import { SendMessageBatchRequestEntry } from '@aws-sdk/client-sqs/dist-types/models/models_0'
 import * as log from 'lambda-log'
-import { env } from '../config/env'
+import { env } from '../../../config/env'
 
 export async function handler(event: any): Promise<any> {
   try {

@@ -1,7 +1,7 @@
 import { when } from 'jest-when'
-import { handler } from './cache-album-art.lambda'
-import { TrackService } from '../service/track.service'
-import { Track } from '../types/components'
+import { handler } from './lambda'
+import { TrackService } from '../../../service/track.service'
+import { Track } from '../../../types/components'
 
 jest.mock('lambda-log')
 jest.mock('../service/track.service')

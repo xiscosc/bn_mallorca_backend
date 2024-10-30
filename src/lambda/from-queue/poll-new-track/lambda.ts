@@ -1,7 +1,7 @@
 import { SQSEvent } from 'aws-lambda'
 import * as log from 'lambda-log'
-import { stringIsValid } from '../helpers/lambda.helper'
-import { TrackService } from '../service/track.service'
+import { stringIsValid } from '../../../helpers/lambda.helper'
+import { TrackService } from '../../../service/track.service'
 
 export async function handler(event: SQSEvent): Promise<any> {
   try {

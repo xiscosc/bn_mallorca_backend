@@ -1,8 +1,8 @@
 import { ProxyResult, APIGatewayEvent } from 'aws-lambda'
 import * as log from 'lambda-log'
-import { badRequest, internalServerError, ok } from '../helpers/lambda.helper'
-import { TrackService } from '../service/track.service'
-import { TrackListResponse } from '../types/components'
+import { badRequest, internalServerError, ok } from '../../../../../helpers/lambda.helper'
+import { TrackService } from '../../../../../service/track.service'
+import { TrackListResponse } from '../../../../../types/components'
 
 export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
   const queryLimitStr = event.queryStringParameters?.['limit']

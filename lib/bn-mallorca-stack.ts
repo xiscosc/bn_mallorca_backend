@@ -110,7 +110,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 256,
       functionName: `${this.props.envName}-cacheAlbumArtLambda`,
-      entry: `${LAMBDA_DIR}cache-album-art.lambda.ts`,
+      entry: `${LAMBDA_DIR}/manual-invocation/cache-album-art/lambda.ts`,
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
@@ -153,7 +153,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 256,
       functionName: `${this.props.envName}-getTackListLambda`,
-      entry: `${LAMBDA_DIR}get-track-list.lambda.ts`,
+      entry: `${LAMBDA_DIR}api/v1/tracklist/get/lambda.ts`,
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
@@ -173,7 +173,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 256,
       functionName: `${this.props.envName}-getScheduleLambda`,
-      entry: `${LAMBDA_DIR}get-schedule.lambda.ts`,
+      entry: `${LAMBDA_DIR}api/v1/schedule/get/lambda.ts`,
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
@@ -191,7 +191,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 256,
       functionName: `${this.props.envName}-pollNewTrackLambda`,
-      entry: `${LAMBDA_DIR}poll-new-track.lambda.ts`,
+      entry: `${LAMBDA_DIR}/from-queue/poll-new-track/lambda.ts`,
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
@@ -216,7 +216,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 128,
       functionName: `${this.props.envName}-fillQueueLambda`,
-      entry: `${LAMBDA_DIR}fill-queue.lambda.ts`,
+      entry: `${LAMBDA_DIR}/cronjob/fill-queue/lambda.ts`,
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
@@ -234,7 +234,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 128,
       functionName: `${this.props.envName}-registerDeviceLambda`,
-      entry: `${LAMBDA_DIR}register-device.lambda.ts`,
+      entry: `${LAMBDA_DIR}api/v1/register/post/lambda.ts`,
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
@@ -255,7 +255,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 128,
       functionName: `${this.props.envName}-unregisterDeviceLambda`,
-      entry: `${LAMBDA_DIR}unregister-device.lambda.ts`,
+      entry: `${LAMBDA_DIR}api/v1/unregister/post/lambda.ts`,
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
@@ -276,7 +276,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 256,
       functionName: `${this.props.envName}-deleteDevicesLambda`,
-      entry: `${LAMBDA_DIR}delete-devices.lambda.ts`,
+      entry: `${LAMBDA_DIR}/cronjob/delete-devices/lambda.ts`,
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
@@ -297,7 +297,7 @@ export class BnMallorcaStack extends Stack {
       handler: 'handler',
       memorySize: 256,
       functionName: `${this.props.envName}-findDisabledDevicesLambda`,
-      entry: `${LAMBDA_DIR}find-disabled-devices.lambda.ts`,
+      entry: `${LAMBDA_DIR}/cronjob/find-disabled-devices/lambda.ts`,
       timeout: Duration.seconds(10),
       logRetention: RetentionDays.ONE_MONTH,
       environment: {
