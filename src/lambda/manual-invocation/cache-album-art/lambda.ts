@@ -1,19 +1,18 @@
 import * as log from 'lambda-log'
 import { stringIsValid } from '../../../helpers/lambda.helper'
-import { TrackService } from '../../../service/track.service'
-import { Track } from '../../../types/components'
+import { AlbumArtService, IAlbumCacheRequest } from '../../../service/album-art.service'
 
-export async function handler(track?: Track): Promise<any> {
-  if (track === undefined || !stringIsValid(track.id) || track.albumArt === undefined || track.albumArt.length === 0) {
-    log.error(`Cache album art: invalid track - ${JSON.stringify(track)}`)
-    throw Error(`Cache album art: invalid track - ${JSON.stringify(track)}`)
+export async function handler({ trackId, albumArt }: IAlbumCacheRequest): Promise<any> {
+  if (!stringIsValid(trackId) || albumArt == null || albumArt.length === 0) {
+    log.error(`Cache album art: invalid track - ${JSON.stringify(trackId)}`)
+    throw Error(`Cache album art: invalid track - ${JSON.stringify(trackId)}`)
   }
 
   try {
-    const trackService = new TrackService()
-    await trackService.cacheAlbumArt(track.albumArt, track.id!!)
+    const albumArtService = new AlbumArtService()
+    await albumArtService.cacheAlbumArt({ trackId, albumArt })
   } catch (err: any) {
-    log.error(`Error caching track album art: ${err.toString()} - ${JSON.stringify(track)}`)
-    throw Error(`Error caching track album art: ${err.toString()} - ${JSON.stringify(track)}`)
+    log.error(`Error caching track album art: ${err.toString()} - ${JSON.stringify(trackId)}`)
+    throw Error(`Error caching track album art: ${err.toString()} - ${JSON.stringify(trackId)}`)
   }
 }
