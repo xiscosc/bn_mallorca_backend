@@ -4,7 +4,7 @@ import { TrackService } from '../../../service/track.service'
 import { Track } from '../../../types/components'
 
 jest.mock('lambda-log')
-jest.mock('../service/track.service')
+jest.mock('../../../service/track.service')
 
 const fullTrack: Track = { id: '1234', name: 'n', artist: 'a', albumArt: [{ size: '1x1', downloadUrl: 'url' }] }
 test('when track is not received it throws an error', async () => {

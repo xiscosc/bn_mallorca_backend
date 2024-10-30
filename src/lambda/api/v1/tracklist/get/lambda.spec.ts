@@ -6,7 +6,7 @@ import { TrackService } from '../../../../../service/track.service'
 import { Track, TrackListResponse } from '../../../../../types/components'
 
 jest.mock('lambda-log')
-jest.mock('../service/track.service')
+jest.mock('../../../../../service/track.service')
 
 const id = '123456'
 const ts = 123456
