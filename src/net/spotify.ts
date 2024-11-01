@@ -1,4 +1,4 @@
-import { SearchResults, SpotifyApi } from '@spotify/web-api-ts-sdk'
+import { PartialSearchResult, SpotifyApi } from '@spotify/web-api-ts-sdk'
 import * as log from 'lambda-log'
 import { getSecretValue } from './secrets-manager'
 import { env } from '../config/env'
@@ -6,7 +6,10 @@ import { env } from '../config/env'
 let spotifySecret: string | undefined
 let spotifyClientId: string | undefined
 
-export async function getSpotifyResults(name: string, artist: string): Promise<SearchResults | undefined> {
+export async function getSpotifyResults(
+  name: string,
+  artist: string,
+): Promise<Required<Pick<PartialSearchResult, 'tracks'>> | undefined> {
   try {
     await loadSpotifySecrets()
     const sdk = SpotifyApi.withClientCredentials(spotifyClientId!!, spotifySecret!!)
