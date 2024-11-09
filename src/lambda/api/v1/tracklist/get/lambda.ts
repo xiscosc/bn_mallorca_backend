@@ -4,6 +4,7 @@ import { badRequest, internalServerError, ok } from '../../../../../helpers/lamb
 import { TrackService } from '../../../../../service/track.service'
 import { TrackListResponse } from '../../../../../types/components'
 
+const trackService = new TrackService()
 export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
   const queryLimitStr = event.queryStringParameters?.['limit']
   const lastTrack = event.queryStringParameters?.['lastTrack']
@@ -14,7 +15,6 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
   }
 
   try {
-    const trackService = new TrackService()
     const { trackList, lastKey } = await trackService.getTrackList(limit, parseLastTrackValue(lastTrack))
     const tracks = filterAds ? TrackService.filterOutAds(trackList) : trackList
     const response: TrackListResponse = { count: trackList.length, tracks }

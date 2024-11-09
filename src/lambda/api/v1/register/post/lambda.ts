@@ -4,6 +4,7 @@ import { badRequest, internalServerError, ok, stringIsValid } from '../../../../
 import { DeviceService } from '../../../../../service/device.service'
 import { DeviceToken } from '../../../../../types/components'
 
+const deviceService = new DeviceService()
 export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
   const tokenInfo: DeviceToken = JSON.parse(event.body!!)
   if (
@@ -16,7 +17,6 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
   }
 
   try {
-    const deviceService = new DeviceService()
     await deviceService.registerDevice(tokenInfo.token, tokenInfo.type)
     return ok({ message: 'Device registered' })
   } catch (err: any) {

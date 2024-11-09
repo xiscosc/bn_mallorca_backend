@@ -164,7 +164,7 @@ export function createLambdas(
     runtime: Runtime.NODEJS_20_X,
     architecture: Architecture.ARM_64,
     handler: 'handler',
-    memorySize: 128,
+    memorySize: 1024,
     functionName: `${envName}-registerDeviceLambda`,
     entry: `${LAMBDA_DIR}api/v1/register/post/lambda.ts`,
     timeout: Duration.seconds(10),
