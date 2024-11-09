@@ -1,7 +1,8 @@
 import { ProxyResult, APIGatewayEvent } from 'aws-lambda'
 import * as log from 'lambda-log'
+import { env } from '../../../../../config/env'
 import { badRequest, internalServerError, ok, stringIsValid } from '../../../../../helpers/lambda.helper'
-import { DeviceService } from '../../../../../service/device.service'
+import { triggerAsyncLambda } from '../../../../../net/lambda'
 import { DeviceToken } from '../../../../../types/components'
 
 export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
@@ -16,7 +17,7 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
   }
 
   try {
-    await DeviceService.triggerRegisterDevice(tokenInfo.token, tokenInfo.type)
+    await triggerAsyncLambda(env.registerDeviceLambdaArn, { token: tokenInfo.token, type: tokenInfo.type })
     return ok({ message: 'Device registered' })
   } catch (err: any) {
     log.error(`Error registering device: ${err.toString()}`)

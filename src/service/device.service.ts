@@ -11,7 +11,6 @@ import * as log from 'lambda-log'
 import { DateTime } from 'luxon'
 import { env } from '../config/env'
 import { getTs, getTsFromStart } from '../helpers/time.helper'
-import { triggerAsyncLambda } from '../net/lambda'
 import { DeviceRepository } from '../repository/device.repository'
 import { DeviceDto } from '../types/components.dto'
 
@@ -80,10 +79,6 @@ export class DeviceService {
     const notRenewedDevices = await this.repository.getNotRenewedDevices(DeviceStatus.ENABLED, startTs)
     const notRenewedDevicesWithStatus = notRenewedDevices.map(d => ({ ...d, status: DeviceStatus.DISABLED }))
     await this.saveDevices(notRenewedDevicesWithStatus)
-  }
-
-  public static async triggerRegisterDevice(token: string, type: string) {
-    await triggerAsyncLambda(env.registerDeviceLambdaArn, { token, type })
   }
 
   private async deleteSubscription(arn: string) {
