@@ -52,7 +52,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
@@ -76,7 +75,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
@@ -96,7 +94,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
@@ -114,7 +111,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
@@ -139,7 +135,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
@@ -157,7 +152,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
@@ -178,7 +172,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
@@ -196,7 +189,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
@@ -217,7 +209,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
@@ -238,7 +229,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
@@ -259,7 +249,6 @@ export function createLambdas(
     },
     bundling: {
       minify: true,
-      sourceMap: true,
     },
   })
 
