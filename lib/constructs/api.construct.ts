@@ -1,4 +1,11 @@
-import { BasePathMapping, DomainName, EndpointType, LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway'
+import {
+  BasePathMapping,
+  DomainName,
+  EndpointType,
+  LambdaIntegration,
+  Model,
+  RestApi,
+} from 'aws-cdk-lib/aws-apigateway'
 import { Construct } from 'constructs'
 import { BnLambdas } from './lambda.construct'
 
@@ -28,7 +35,22 @@ export function createApi(
   })
 
   const getTrackListIntegration = new LambdaIntegration(getTackListLambda)
-  const registerDeviceIntegration = new LambdaIntegration(triggerRegisterDeviceLambda)
+
+  // Trigger registration async to speed up
+  const registerDeviceIntegration = new LambdaIntegration(triggerRegisterDeviceLambda, {
+    requestParameters: {
+      'integration.request.header.X-Amz-Invocation-Type': "'Event'",
+    },
+    integrationResponses: [
+      {
+        statusCode: '200',
+        responseTemplates: {
+          'application/json': JSON.stringify({ message: 'Device registered' }),
+        },
+      },
+    ],
+  })
+
   const unregisterDeviceIntegration = new LambdaIntegration(unregisterDeviceLambda)
   const getScheduleIntegration = new LambdaIntegration(getScheduleLambda)
   const apiV1 = api.root.addResource('api').addResource('v1')
@@ -37,10 +59,19 @@ export function createApi(
   const registerResource = apiV1.addResource('register')
   const unregisterResource = apiV1.addResource('unregister')
   trackListResource.addMethod('GET', getTrackListIntegration)
-
   scheduleResource.addMethod('GET', getScheduleIntegration)
-  registerResource.addMethod('POST', registerDeviceIntegration)
   unregisterResource.addMethod('POST', unregisterDeviceIntegration)
+
+  registerResource.addMethod('POST', registerDeviceIntegration, {
+    methodResponses: [
+      {
+        statusCode: '200',
+        responseModels: {
+          'application/json': Model.EMPTY_MODEL,
+        },
+      },
+    ],
+  })
 
   // eslint-disable-next-line no-new
   new BasePathMapping(scope, `${envName}-apiPathMapping`, {
