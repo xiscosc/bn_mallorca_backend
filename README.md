@@ -1,4 +1,4 @@
-# BN Mallorca ![deploy workflow](https://github.com/xiscosc/bn_mallorca_backend/actions/workflows/aws-deploy.yml/badge.svg) ![coverage workflow](https://github.com/xiscosc/bn_mallorca_backend/actions/workflows/coverage.yml/badge.svg)
+# BN Mallorca ![deploy workflow](https://github.com/xiscosc/bn_mallorca_backend/actions/workflows/aws-deploy.yml/badge.svg)
 
 Backend and infrastructure for the BN Mallorca Radio App.
 
