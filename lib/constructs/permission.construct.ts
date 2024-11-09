@@ -25,6 +25,7 @@ export function createPermissions(
     unregisterDeviceLambda,
     deleteDevicesLambda,
     findDisabledDevicesLambda,
+    triggerRegisterDeviceLambda,
   }: BnLambdas,
   { pollingQueue }: BnQueues,
   { albumArtBucket }: BnBuckets,
@@ -32,6 +33,8 @@ export function createPermissions(
 ) {
   cacheAlbumArtLambda.grantInvoke(processNewTrackLambda)
   cacheAlbumArtLambda.grantInvoke(pollNewTrackLambda)
+
+  registerDeviceLambda.grantInvoke(triggerRegisterDeviceLambda)
 
   trackListTable.grantWriteData(processNewTrackLambda)
   trackListTable.grantReadData(getTackListLambda)

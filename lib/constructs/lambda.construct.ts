@@ -22,6 +22,7 @@ export type BnLambdas = {
   unregisterDeviceLambda: NodejsFunction
   deleteDevicesLambda: NodejsFunction
   findDisabledDevicesLambda: NodejsFunction
+  triggerRegisterDeviceLambda: NodejsFunction
 }
 
 export function createLambdas(
@@ -164,9 +165,9 @@ export function createLambdas(
     runtime: Runtime.NODEJS_20_X,
     architecture: Architecture.ARM_64,
     handler: 'handler',
-    memorySize: 1024,
+    memorySize: 512,
     functionName: `${envName}-registerDeviceLambda`,
-    entry: `${LAMBDA_DIR}api/v1/register/post/lambda.ts`,
+    entry: `${LAMBDA_DIR}/manual-invocation/register-device/lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -174,6 +175,24 @@ export function createLambdas(
       IOS_APP_SNS: iosAppSns,
       ANDROID_APP_SNS: androidAppSns,
       DEVICE_TABLE: deviceTable.tableName,
+    },
+    bundling: {
+      minify: true,
+      sourceMap: true,
+    },
+  })
+
+  const triggerRegisterDeviceLambda = new NodejsFunction(scope, `${envName}-triggerRegisterDeviceLambda`, {
+    runtime: Runtime.NODEJS_20_X,
+    architecture: Architecture.ARM_64,
+    handler: 'handler',
+    memorySize: 1024,
+    functionName: `${envName}-triggerRegisterDeviceLambda`,
+    entry: `${LAMBDA_DIR}api/v1/register/post/lambda.ts`,
+    timeout: Duration.seconds(10),
+    logRetention: RetentionDays.ONE_MONTH,
+    environment: {
+      REGISTER_DEVICE_LAMBDA_ARN: registerDeviceLambda.functionArn,
     },
     bundling: {
       minify: true,
@@ -255,5 +274,6 @@ export function createLambdas(
     unregisterDeviceLambda,
     deleteDevicesLambda,
     findDisabledDevicesLambda,
+    triggerRegisterDeviceLambda,
   }
 }

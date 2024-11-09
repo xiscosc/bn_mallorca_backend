@@ -6,6 +6,7 @@ export const env = {
   deviceTable: process.env['DEVICE_TABLE'] ?? '',
   processLambdaArn: process.env['PROCESS_LAMBDA_ARN'] ?? '',
   cacheLambdaArn: process.env['CACHE_LAMBDA_ARN'] ?? '',
+  registerDeviceLambdaArn: process.env['REGISTER_DEVICE_LAMBDA_ARN'] ?? '',
   notificationTopicArn: process.env['NOTIFICATION_TOPIC'] ?? '',
   spotifyClientIdArn: process.env['SPOTIFY_CLIENT_ID'] ?? '',
   spotifySecretIdArn: process.env['SPOTIFY_SECRET_ID'] ?? '',
