@@ -8,7 +8,7 @@ export function createApi(
   apiDomainName: string,
   apiDomainAPIGatewayDomainName: string,
   apiDomainHostedZoneId: string,
-  { getTackListLambda, getScheduleLambda, triggerRegisterDeviceLambda, unregisterDeviceLambda }: BnLambdas,
+  { getTrackListLambda, getScheduleLambda, triggerRegisterDeviceLambda, unregisterDeviceLambda }: BnLambdas,
 ) {
   const api = new RestApi(scope, `${envName}-trackListApi`, {
     restApiName: `TrackList API - ${envName}`,
@@ -27,7 +27,7 @@ export function createApi(
     domainNameAliasTarget: apiDomainAPIGatewayDomainName,
   })
 
-  const getTrackListIntegration = new LambdaIntegration(getTackListLambda)
+  const getTrackListIntegration = new LambdaIntegration(getTrackListLambda)
   const registerDeviceIntegration = new LambdaIntegration(triggerRegisterDeviceLambda)
   const unregisterDeviceIntegration = new LambdaIntegration(unregisterDeviceLambda)
   const getScheduleIntegration = new LambdaIntegration(getScheduleLambda)

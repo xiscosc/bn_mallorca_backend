@@ -18,7 +18,7 @@ export function createPermissions(
     cacheAlbumArtLambda,
     pollNewTrackLambda,
     processNewTrackLambda,
-    getTackListLambda,
+    getTrackListLambda,
     getScheduleLambda,
     fillQueueLambda,
     registerDeviceLambda,
@@ -37,7 +37,7 @@ export function createPermissions(
   registerDeviceLambda.grantInvoke(triggerRegisterDeviceLambda)
 
   trackListTable.grantWriteData(processNewTrackLambda)
-  trackListTable.grantReadData(getTackListLambda)
+  trackListTable.grantReadData(getTrackListLambda)
   trackListTable.grantReadWriteData(pollNewTrackLambda)
 
   scheduleTable.grantReadData(getScheduleLambda)
@@ -45,7 +45,7 @@ export function createPermissions(
   albumArtTable.grantWriteData(cacheAlbumArtLambda)
   albumArtTable.grantReadData(processNewTrackLambda)
   albumArtTable.grantReadData(pollNewTrackLambda)
-  albumArtTable.grantReadData(getTackListLambda)
+  albumArtTable.grantReadData(getTrackListLambda)
 
   albumArtBucket.grantWrite(cacheAlbumArtLambda)
 

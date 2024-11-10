@@ -14,7 +14,7 @@ const LAMBDA_DIR = `${__dirname}/../../src/lambda/`
 export type BnLambdas = {
   cacheAlbumArtLambda: NodejsFunction
   processNewTrackLambda: NodejsFunction
-  getTackListLambda: NodejsFunction
+  getTrackListLambda: NodejsFunction
   getScheduleLambda: NodejsFunction
   pollNewTrackLambda: NodejsFunction
   fillQueueLambda: NodejsFunction
@@ -78,12 +78,12 @@ export function createLambdas(
     },
   })
 
-  const getTackListLambda = new NodejsFunction(scope, `${envName}-getTackListLambda`, {
+  const getTrackListLambda = new NodejsFunction(scope, `${envName}-getTrackListLambda`, {
     runtime: Runtime.NODEJS_20_X,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 2048,
-    functionName: `${envName}-getTackListLambda`,
+    functionName: `${envName}-getTrackListLambda`,
     entry: `${LAMBDA_DIR}api/v1/tracklist/get/lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
@@ -255,7 +255,7 @@ export function createLambdas(
   return {
     cacheAlbumArtLambda,
     processNewTrackLambda,
-    getTackListLambda,
+    getTrackListLambda,
     getScheduleLambda,
     pollNewTrackLambda,
     fillQueueLambda,
