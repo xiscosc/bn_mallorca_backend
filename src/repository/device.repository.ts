@@ -28,7 +28,7 @@ export class DeviceRepository extends DynamoRepository<DeviceDto> {
   }
 
   public async getDevicesByStatus(status: number, limit?: number): Promise<DeviceDto[]> {
-    return await this.getBySecondaryIndexWithSortKey('statusSubscribedAtIndex', 'status', status, false, limit)
+    return await this.getBySecondaryIndexWithSortKey('statusSubscribedAtIndex', 'status', status, true, limit)
   }
 
   public async getNotRenewedDevices(status: number, ts: number): Promise<DeviceDto[]> {
