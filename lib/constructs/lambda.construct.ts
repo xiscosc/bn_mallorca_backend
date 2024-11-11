@@ -216,10 +216,10 @@ export function createLambdas(
     runtime: Runtime.NODEJS_20_X,
     architecture: Architecture.ARM_64,
     handler: 'handler',
-    memorySize: 256,
+    memorySize: 512,
     functionName: `${envName}-deleteDevicesLambda`,
     entry: `${LAMBDA_DIR}/cronjob/delete-devices/lambda.ts`,
-    timeout: Duration.seconds(10),
+    timeout: Duration.minutes(2),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
       NOTIFICATION_TOPIC: notificationsTopic.topicArn,

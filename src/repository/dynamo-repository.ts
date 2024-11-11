@@ -90,6 +90,7 @@ export abstract class DynamoRepository<T> {
     partitionKeyName: string,
     partitionKeyValue: string | number,
     ascendent: boolean,
+    limit?: number,
   ): Promise<T[]> {
     const params: QueryCommandInput = {
       TableName: this.table,
@@ -102,6 +103,7 @@ export abstract class DynamoRepository<T> {
         ':iv': partitionKeyValue,
       },
       ScanIndexForward: ascendent,
+      Limit: limit,
     }
 
     const command = new QueryCommand(params)

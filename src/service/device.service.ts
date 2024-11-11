@@ -64,7 +64,7 @@ export class DeviceService {
   }
 
   public async cleanDevices() {
-    const devices = await this.repository.getDevicesByStatus(DeviceStatus.DISABLED)
+    const devices = await this.repository.getDevicesByStatus(DeviceStatus.DISABLED, 35)
     if (devices.length > 0) {
       const deleteSubscriptionPromises = devices.map(d => this.deleteSubscription(d.subscriptionArn))
       await Promise.all(deleteSubscriptionPromises)

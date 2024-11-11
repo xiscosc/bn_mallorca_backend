@@ -9,7 +9,7 @@ export function createTriggers(
   scope: Construct,
   envName: string,
   { pollingQueue }: BnQueues,
-  { fillQueueLambda, findDisabledDevicesLambda, pollNewTrackLambda }: BnLambdas,
+  { fillQueueLambda, findDisabledDevicesLambda, pollNewTrackLambda, deleteDevicesLambda }: BnLambdas,
 ) {
   if (envName === 'prod') {
     const pollingEventRule = new Rule(scope, `${envName}-pollingEventRule`, {
@@ -17,10 +17,10 @@ export function createTriggers(
     })
     pollingEventRule.addTarget(new LambdaFunction(fillQueueLambda))
 
-    // const cleaningEventRule = new Rule(scope, `${envName}-cleaningEventRule`, {
-    //   schedule: Schedule.cron({ hour: '*' }),
-    // })
-    // cleaningEventRule.addTarget(new LambdaFunction(deleteDevicesLambda))
+    const cleaningEventRule = new Rule(scope, `${envName}-cleaningEventRule`, {
+      schedule: Schedule.cron({ minute: '*/10', hour: '*' }),
+    })
+    cleaningEventRule.addTarget(new LambdaFunction(deleteDevicesLambda))
 
     const findDisabledDevicesRule = new Rule(scope, `${envName}-findDisabledDevicesRule`, {
       schedule: Schedule.cron({ minute: '0', hour: '3' }),
