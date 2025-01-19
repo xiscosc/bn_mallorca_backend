@@ -9,7 +9,7 @@ import { BnQueues } from './queue.construct'
 import { BnSecrets } from './secret.construct'
 import { BnTopics } from './topic.construct'
 
-const LAMBDA_DIR = `${__dirname}/../../src/lambda/`
+const FUNCTION_DIR = `${__dirname}/../../src/function`
 
 export type BnLambdas = {
   cacheAlbumArtLambda: NodejsFunction
@@ -43,7 +43,7 @@ export function createLambdas(
     handler: 'handler',
     memorySize: 256,
     functionName: `${envName}-cacheAlbumArtLambda`,
-    entry: `${LAMBDA_DIR}/manual-invocation/cache-album-art/lambda.ts`,
+    entry: `${FUNCTION_DIR}/album-art/cache-album-art.lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -55,13 +55,14 @@ export function createLambdas(
     },
   })
 
+  // For testing purposes
   const processNewTrackLambda = new NodejsFunction(scope, `${envName}-processNewTrackLambda`, {
     runtime: Runtime.NODEJS_20_X,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 256,
     functionName: `${envName}-processNewTrackLambda`,
-    entry: `${LAMBDA_DIR}process-new-track.lambda.ts`,
+    entry: `${FUNCTION_DIR}/track/process-new-track.lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -84,7 +85,7 @@ export function createLambdas(
     handler: 'handler',
     memorySize: 2048,
     functionName: `${envName}-getTrackListLambda`,
-    entry: `${LAMBDA_DIR}api/v1/tracklist/get/lambda.ts`,
+    entry: `${FUNCTION_DIR}/track/get-track-list.lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -103,7 +104,7 @@ export function createLambdas(
     handler: 'handler',
     memorySize: 256,
     functionName: `${envName}-getScheduleLambda`,
-    entry: `${LAMBDA_DIR}api/v1/schedule/get/lambda.ts`,
+    entry: `${FUNCTION_DIR}/schedule/get-schedule.lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -120,7 +121,7 @@ export function createLambdas(
     handler: 'handler',
     memorySize: 256,
     functionName: `${envName}-pollNewTrackLambda`,
-    entry: `${LAMBDA_DIR}/from-queue/poll-new-track/lambda.ts`,
+    entry: `${FUNCTION_DIR}/track/poll-new-track.lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -144,7 +145,7 @@ export function createLambdas(
     handler: 'handler',
     memorySize: 128,
     functionName: `${envName}-fillQueueLambda`,
-    entry: `${LAMBDA_DIR}/cronjob/fill-queue/lambda.ts`,
+    entry: `${FUNCTION_DIR}/track/fill-track-polling-queue.lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -161,7 +162,7 @@ export function createLambdas(
     handler: 'handler',
     memorySize: 512,
     functionName: `${envName}-registerDeviceLambda`,
-    entry: `${LAMBDA_DIR}/manual-invocation/register-device/lambda.ts`,
+    entry: `${FUNCTION_DIR}/device/register-device.lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -181,7 +182,7 @@ export function createLambdas(
     handler: 'handler',
     memorySize: 2048,
     functionName: `${envName}-triggerRegisterDeviceLambda`,
-    entry: `${LAMBDA_DIR}api/v1/register/post/lambda.ts`,
+    entry: `${FUNCTION_DIR}/device/trigger-async-register-device.lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -198,7 +199,7 @@ export function createLambdas(
     handler: 'handler',
     memorySize: 128,
     functionName: `${envName}-unregisterDeviceLambda`,
-    entry: `${LAMBDA_DIR}api/v1/unregister/post/lambda.ts`,
+    entry: `${FUNCTION_DIR}/device/unregister-device.lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -218,7 +219,7 @@ export function createLambdas(
     handler: 'handler',
     memorySize: 512,
     functionName: `${envName}-deleteDevicesLambda`,
-    entry: `${LAMBDA_DIR}/cronjob/delete-devices/lambda.ts`,
+    entry: `${FUNCTION_DIR}/device/clean-devices.lambda.ts`,
     timeout: Duration.minutes(2),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
@@ -238,7 +239,7 @@ export function createLambdas(
     handler: 'handler',
     memorySize: 256,
     functionName: `${envName}-findDisabledDevicesLambda`,
-    entry: `${LAMBDA_DIR}/cronjob/find-disabled-devices/lambda.ts`,
+    entry: `${FUNCTION_DIR}/device/find-unactive-devices.lambda.ts`,
     timeout: Duration.seconds(10),
     logRetention: RetentionDays.ONE_MONTH,
     environment: {

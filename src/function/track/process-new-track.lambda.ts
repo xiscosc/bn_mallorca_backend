@@ -1,7 +1,7 @@
 import * as log from 'lambda-log'
-import { stringIsValid } from '../helpers/lambda.helper'
-import { TrackService } from '../service/track.service'
-import { Track } from '../types/components'
+import { stringIsValid } from '../../helpers/lambda.helper'
+import { TrackService } from '../../service/track.service'
+import { Track } from '../../types/components'
 
 // For testing purposes
 const trackService = new TrackService()

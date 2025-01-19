@@ -1,8 +1,8 @@
 import { ProxyResult } from 'aws-lambda'
 import * as log from 'lambda-log'
-import { internalServerError, ok } from '../../../../../helpers/lambda.helper'
-import { ScheduleService } from '../../../../../service/schedule.service'
-import { ScheduleResponse } from '../../../../../types/components'
+import { internalServerError, ok } from '../../helpers/lambda.helper'
+import { ScheduleService } from '../../service/schedule.service'
+import { ScheduleResponse } from '../../types/components'
 
 export async function handler(): Promise<ProxyResult> {
   try {

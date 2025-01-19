@@ -1,9 +1,9 @@
 import { ProxyResult, APIGatewayEvent } from 'aws-lambda'
 import * as log from 'lambda-log'
-import { env } from '../../../../../config/env'
-import { badRequest, internalServerError, ok, stringIsValid } from '../../../../../helpers/lambda.helper'
-import { triggerAsyncLambda } from '../../../../../net/lambda'
-import { DeviceToken } from '../../../../../types/components'
+import { env } from '../../config/env'
+import { badRequest, internalServerError, ok, stringIsValid } from '../../helpers/lambda.helper'
+import { triggerAsyncLambda } from '../../net/lambda'
+import { DeviceToken } from '../../types/components'
 
 export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
   const tokenInfo: DeviceToken = JSON.parse(event.body!!)

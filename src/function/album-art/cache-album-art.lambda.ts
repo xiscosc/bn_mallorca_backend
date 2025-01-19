@@ -1,6 +1,6 @@
 import * as log from 'lambda-log'
-import { stringIsValid } from '../../../helpers/lambda.helper'
-import { AlbumArtService, IAlbumCacheRequest } from '../../../service/album-art.service'
+import { stringIsValid } from '../../helpers/lambda.helper'
+import { AlbumArtService, IAlbumCacheRequest } from '../../service/album-art.service'
 
 export async function handler({ trackId, albumArt }: IAlbumCacheRequest): Promise<any> {
   if (!stringIsValid(trackId) || albumArt == null || albumArt.length === 0) {

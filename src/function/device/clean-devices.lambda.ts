@@ -1,5 +1,5 @@
 import * as log from 'lambda-log'
-import { DeviceService } from '../../../service/device.service'
+import { DeviceService } from '../../service/device.service'
 
 export async function handler(event: any): Promise<any> {
   try {
