@@ -21,10 +21,24 @@ export function isBNTrack(track: Track): boolean {
     'bn mca radio',
     'en bn mca radio',
     'unknown',
+    'not defined',
     'nos saluda',
     'nos saludan',
   ]
   return bnNames.indexOf(track.name.toLowerCase()) > -1 || bnNames.indexOf(track.artist.toLowerCase()) > -1
+}
+
+export function isUnknownTrack(track: Track): boolean {
+  const unknownNames = ['unknown', 'not defined']
+  return unknownNames.indexOf(track.name.toLowerCase()) > -1 || unknownNames.indexOf(track.artist.toLowerCase()) > -1
+}
+
+export function cleanUnknownTrack(track: Track): Track {
+  if (!isUnknownTrack(track)) {
+    return track
+  }
+
+  return { ...track, name: 'BN MCA', artist: 'Radio' }
 }
 
 export function findArtistInSpotifyTracks(tracks: SpotifyTrack[], artist: string): SpotifyTrack | undefined {

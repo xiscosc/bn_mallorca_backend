@@ -10,6 +10,7 @@ import { BnSecrets } from './secret.construct'
 import { BnTopics } from './topic.construct'
 
 const FUNCTION_DIR = `${__dirname}/../../src/function`
+const DEFAULT_RUNTIME = Runtime.NODEJS_22_X
 
 export type BnLambdas = {
   cacheAlbumArtLambda: NodejsFunction
@@ -38,7 +39,7 @@ export function createLambdas(
   { spotifyClientId, spotifySecret }: BnSecrets,
 ): BnLambdas {
   const cacheAlbumArtLambda = new NodejsFunction(scope, `${envName}-cacheAlbumArtLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 256,
@@ -57,7 +58,7 @@ export function createLambdas(
 
   // For testing purposes
   const processNewTrackLambda = new NodejsFunction(scope, `${envName}-processNewTrackLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 256,
@@ -80,7 +81,7 @@ export function createLambdas(
   })
 
   const getTrackListLambda = new NodejsFunction(scope, `${envName}-getTrackListLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 2048,
@@ -99,7 +100,7 @@ export function createLambdas(
   })
 
   const getScheduleLambda = new NodejsFunction(scope, `${envName}-getScheduleLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 256,
@@ -116,7 +117,7 @@ export function createLambdas(
   })
 
   const pollNewTrackLambda = new NodejsFunction(scope, `${envName}-pollNewTrackLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 256,
@@ -140,7 +141,7 @@ export function createLambdas(
   })
 
   const fillQueueLambda = new NodejsFunction(scope, `${envName}-fillQueueLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 128,
@@ -157,7 +158,7 @@ export function createLambdas(
   })
 
   const registerDeviceLambda = new NodejsFunction(scope, `${envName}-registerDeviceLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 512,
@@ -177,7 +178,7 @@ export function createLambdas(
   })
 
   const triggerRegisterDeviceLambda = new NodejsFunction(scope, `${envName}-triggerRegisterDeviceLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 2048,
@@ -194,7 +195,7 @@ export function createLambdas(
   })
 
   const unregisterDeviceLambda = new NodejsFunction(scope, `${envName}-unregisterDeviceLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 128,
@@ -214,7 +215,7 @@ export function createLambdas(
   })
 
   const deleteDevicesLambda = new NodejsFunction(scope, `${envName}-deleteDevicesLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 512,
@@ -234,7 +235,7 @@ export function createLambdas(
   })
 
   const findDisabledDevicesLambda = new NodejsFunction(scope, `${envName}-findDisabledDevicesLambda`, {
-    runtime: Runtime.NODEJS_20_X,
+    runtime: DEFAULT_RUNTIME,
     architecture: Architecture.ARM_64,
     handler: 'handler',
     memorySize: 256,

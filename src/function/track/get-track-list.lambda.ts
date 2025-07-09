@@ -15,9 +15,8 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
   }
 
   try {
-    const { trackList, lastKey } = await trackService.getTrackList(limit, parseLastTrackValue(lastTrack))
-    const tracks = filterAds ? TrackService.filterOutAds(trackList) : trackList
-    const response: TrackListResponse = { count: trackList.length, tracks }
+    const { trackList, lastKey } = await trackService.getTrackList(limit, filterAds, parseLastTrackValue(lastTrack))
+    const response: TrackListResponse = { count: trackList.length, tracks: trackList }
     if (lastKey != null) {
       response.lastTrack = lastKey
     }

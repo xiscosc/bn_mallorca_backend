@@ -1,6 +1,6 @@
 import { AlbumArtService } from './album-art.service'
 import { env } from '../config/env'
-import { getTrackId, getTrackTs, isBNTrack } from '../helpers/track.helper'
+import { cleanUnknownTrack, getTrackId, getTrackTs, isBNTrack, isUnknownTrack } from '../helpers/track.helper'
 import { getCurrentTrackFromCentova } from '../net/centova.downloader'
 import { publishToSns } from '../net/sns'
 import { TrackListRepository } from '../repository/track-list.repository'
@@ -34,18 +34,34 @@ export class TrackService {
 
     processedTrack.albumArt = await this.albumArtService.getAlbumArt(processedTrack)
     await publishToSns(env.notificationTopicArn, JSON.stringify(processedTrack))
-    await this.trackListRepository.putTrack(TrackService.transformTrackToDto(processedTrack))
+    await this.trackListRepository.putTrack(TrackService.transformTrackToDto(cleanUnknownTrack(processedTrack)))
     return processedTrack
   }
 
-  public async getTrackList(limit: number, lastTrack?: number): Promise<{ trackList: TrackList; lastKey?: number }> {
+  public async getTrackList(
+    limit: number,
+    filterOutAds: boolean,
+    lastTrack?: number,
+  ): Promise<{ trackList: TrackList; lastKey?: number }> {
     if (limit <= 0 || limit > 25) {
       throw Error('Limit is not between 1 and 25')
     }
 
     const { tracksDto, lastKey } = await this.trackListRepository.getLastTracks(limit, lastTrack)
     const trackList = await Promise.all(tracksDto.map(t => this.trackDtoToModel(t)))
-    return { trackList, lastKey }
+
+    const filteredTrackList: TrackList = []
+    trackList.forEach(track => {
+      if (isUnknownTrack(track)) {
+        filteredTrackList.push(cleanUnknownTrack(track))
+      } else if (!filterOutAds) {
+        filteredTrackList.push(track)
+      } else if (!isBNTrack(track)) {
+        filteredTrackList.push(track)
+      }
+    })
+
+    return { trackList: filteredTrackList, lastKey }
   }
 
   public async trackHasChanged(centovaTrack: Track): Promise<boolean> {
