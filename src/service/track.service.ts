@@ -33,8 +33,8 @@ export class TrackService {
     }
 
     processedTrack.albumArt = await this.albumArtService.getAlbumArt(processedTrack)
-    await publishToSns(env.notificationTopicArn, JSON.stringify(processedTrack))
-    await this.trackListRepository.putTrack(TrackService.transformTrackToDto(cleanUnknownTrack(processedTrack)))
+    await publishToSns(env.notificationTopicArn, JSON.stringify(cleanUnknownTrack(processedTrack)))
+    await this.trackListRepository.putTrack(TrackService.transformTrackToDto(processedTrack))
     return processedTrack
   }
 
