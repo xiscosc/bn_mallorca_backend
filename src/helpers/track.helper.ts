@@ -16,6 +16,8 @@ const bnNames = [
   'en bn mca radio',
   'nos saluda',
   'nos saludan',
+  'not defined',
+  'unknown',
 ]
 
 export function getTrackId(track: Track): string {
