@@ -4,6 +4,20 @@ import crypto from 'crypto'
 import { getTs } from './time.helper'
 import { Track } from '../types/components'
 
+const unknownNames = ['unknown']
+const unknownPlayerNames = ['not defined']
+const bnNames = [
+  'bn mallorca',
+  'bn mallorca radio',
+  'publicidad',
+  'servicios',
+  'bn mca',
+  'bn mca radio',
+  'en bn mca radio',
+  'nos saluda',
+  'nos saludan',
+]
+
 export function getTrackId(track: Track): string {
   return crypto.createHash('sha1').update(`${track.name}++${track.artist}`).digest('hex')
 }
@@ -13,32 +27,23 @@ export function getTrackTs(): number {
 }
 
 export function isBNTrack(track: Track): boolean {
-  const bnNames = [
-    'bn mallorca',
-    'bn mallorca radio',
-    'publicidad',
-    'bn mca',
-    'bn mca radio',
-    'en bn mca radio',
-    'unknown',
-    'not defined',
-    'nos saluda',
-    'nos saludan',
-  ]
-  return bnNames.indexOf(track.name.toLowerCase()) > -1 || bnNames.indexOf(track.artist.toLowerCase()) > -1
+  return isTrackWithinList(track, bnNames)
 }
 
-export function isUnknownTrack(track: Track): boolean {
-  const unknownNames = ['unknown', 'not defined']
-  return unknownNames.indexOf(track.name.toLowerCase()) > -1 || unknownNames.indexOf(track.artist.toLowerCase()) > -1
+export function isUnknownTrackForPlayer(track: Track): boolean {
+  return isTrackWithinList(track, [...unknownNames, ...unknownPlayerNames])
+}
+
+export function isUnknownTrackForTrackList(track: Track): boolean {
+  return isTrackWithinList(track, unknownNames)
 }
 
 export function cleanUnknownTrack(track: Track): Track {
-  if (!isUnknownTrack(track)) {
-    return track
+  if (isUnknownTrackForPlayer(track) || isUnknownTrackForTrackList(track)) {
+    return { ...track, name: 'BN MCA', artist: 'Radio' }
   }
 
-  return { ...track, name: 'BN MCA', artist: 'Radio' }
+  return track
 }
 
 export function findArtistInSpotifyTracks(tracks: SpotifyTrack[], artist: string): SpotifyTrack | undefined {
@@ -69,4 +74,8 @@ export function normalizeString(str1: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+}
+
+function isTrackWithinList(track: Track, list: string[]): boolean {
+  return list.indexOf(track.name.toLowerCase()) > -1 || list.indexOf(track.artist.toLowerCase()) > -1
 }

@@ -1,6 +1,13 @@
 import { AlbumArtService } from './album-art.service'
 import { env } from '../config/env'
-import { cleanUnknownTrack, getTrackId, getTrackTs, isBNTrack, isUnknownTrack } from '../helpers/track.helper'
+import {
+  cleanUnknownTrack,
+  getTrackId,
+  getTrackTs,
+  isBNTrack,
+  isUnknownTrackForTrackList,
+  isUnknownTrackForPlayer,
+} from '../helpers/track.helper'
 import { getCurrentTrackFromCentova } from '../net/centova.downloader'
 import { publishToSns } from '../net/sns'
 import { TrackListRepository } from '../repository/track-list.repository'
@@ -49,10 +56,11 @@ export class TrackService {
 
     const { tracksDto, lastKey } = await this.trackListRepository.getLastTracks(limit, lastTrack)
     const trackList = await Promise.all(tracksDto.map(t => this.trackDtoToModel(t)))
+    const checkUnknown = filterOutAds ? isUnknownTrackForTrackList : isUnknownTrackForPlayer
 
     const filteredTrackList: TrackList = []
     trackList.forEach(track => {
-      if (isUnknownTrack(track)) {
+      if (checkUnknown(track)) {
         filteredTrackList.push(cleanUnknownTrack(track))
       } else if (!filterOutAds) {
         filteredTrackList.push(track)
