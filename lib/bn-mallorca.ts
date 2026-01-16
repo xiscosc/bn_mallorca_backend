@@ -13,6 +13,8 @@ export class BnMallorcaApp extends App {
       apiDomainAPIGatewayDomainName: BnMallorcaApp.getFromEnv('API_DOMAIN_GATEWAY_NAME'),
       apiDomainHostedZoneId: BnMallorcaApp.getFromEnv('API_DOMAIN_HOSTED_ZONE_ID'),
       centovaUrl: BnMallorcaApp.getFromEnv('CENTOVA_URL'),
+      centovaStreamUrl: BnMallorcaApp.getFromEnv('CENTOVA_STREAM_URL'),
+      trackSource: BnMallorcaApp.getFromEnv('TRACK_SOURCE'),
       iosAppSns: BnMallorcaApp.getFromEnv('IOS_APP_SNS'),
       androidAppSns: BnMallorcaApp.getFromEnv('ANDROID_APP_SNS'),
     }

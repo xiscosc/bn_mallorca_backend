@@ -1,3 +1,5 @@
+import { TrackSource } from '../types/track-source.enum'
+
 export const env = {
   albumArtTable: process.env['ALBUM_ART_TABLE'] ?? '',
   scheduleTable: process.env['SCHEDULE_TABLE'] ?? '',
@@ -15,4 +17,6 @@ export const env = {
   pollQueueUrl: process.env['POLL_QUEUE_URL'] ?? '',
   iosAppSns: process.env['IOS_APP_SNS'] ?? '',
   androidAppSns: process.env['ANDROID_APP_SNS'] ?? '',
+  trackSource: (process.env['TRACK_SOURCE'] as TrackSource) ?? TrackSource.CENTOVA,
+  centovaStreamUrl: process.env['CENTOVA_STREAM_URL'] ?? '',
 }

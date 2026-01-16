@@ -8,14 +8,7 @@ export async function handler(event: any): Promise<any> {
     log.info(JSON.stringify(event))
     const input: SendMessageBatchCommandInput = {
       QueueUrl: env.pollQueueUrl,
-      Entries: [
-        generateMessage(5),
-        generateMessage(15),
-        generateMessage(25),
-        generateMessage(35),
-        generateMessage(45),
-        generateMessage(55),
-      ],
+      Entries: [5, 15, 25, 35, 45, 55].map(timeout => generateMessage(timeout)),
     }
 
     const client = new SQSClient({})

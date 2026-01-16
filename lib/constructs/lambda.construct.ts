@@ -32,6 +32,8 @@ export function createLambdas(
   iosAppSns: string,
   androidAppSns: string,
   centovaUrl: string,
+  centovaStreamUrl: string,
+  trackSource: string,
   { pollingQueue }: BnQueues,
   { trackListTable, albumArtTable, deviceTable, scheduleTable }: BnTables,
   { albumArtBucket }: BnBuckets,
@@ -127,6 +129,8 @@ export function createLambdas(
     logRetention: RetentionDays.ONE_MONTH,
     environment: {
       CENTOVA_URL: centovaUrl,
+      TRACK_SOURCE: trackSource,
+      CENTOVA_STREAM_URL: centovaStreamUrl,
       ALBUM_ART_BUCKET: albumArtBucket.bucketName,
       ALBUM_ART_TABLE: albumArtTable.tableName,
       TRACK_LIST_TABLE: trackListTable.tableName,

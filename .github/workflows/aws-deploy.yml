@@ -48,6 +48,8 @@ jobs:
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
           CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
+          CENTOVA_STREAM_URL: ${{ secrets.CENTOVA_STREAM_URL }}
+          TRACK_SOURCE: ${{ secrets.TRACK_SOURCE }}
           IOS_APP_SNS: ${{ secrets.IOS_APP_SNS }}
           ANDROID_APP_SNS: ${{ secrets.ANDROID_APP_SNS }}
 
@@ -62,6 +64,8 @@ jobs:
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
           CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
+          CENTOVA_STREAM_URL: ${{ secrets.CENTOVA_STREAM_URL }}
+          TRACK_SOURCE: ${{ secrets.TRACK_SOURCE }}
           IOS_APP_SNS: ${{ secrets.IOS_APP_SNS }}
           ANDROID_APP_SNS: ${{ secrets.ANDROID_APP_SNS }}
 
@@ -76,6 +80,8 @@ jobs:
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
           CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
+          CENTOVA_STREAM_URL: ${{ secrets.CENTOVA_STREAM_URL }}
+          TRACK_SOURCE: ${{ secrets.TRACK_SOURCE }}
           IOS_APP_SNS: ${{ secrets.IOS_APP_SNS }}
           ANDROID_APP_SNS: ${{ secrets.ANDROID_APP_SNS }}
 
@@ -121,6 +127,8 @@ jobs:
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
           CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
+          CENTOVA_STREAM_URL: ${{ secrets.CENTOVA_STREAM_URL }}
+          TRACK_SOURCE: ${{ secrets.TRACK_SOURCE }}
           IOS_APP_SNS: ${{ secrets.IOS_APP_SNS }}
           ANDROID_APP_SNS: ${{ secrets.ANDROID_APP_SNS }}
 
@@ -135,6 +143,8 @@ jobs:
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
           CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
+          CENTOVA_STREAM_URL: ${{ secrets.CENTOVA_STREAM_URL }}
+          TRACK_SOURCE: ${{ secrets.TRACK_SOURCE }}
           IOS_APP_SNS: ${{ secrets.IOS_APP_SNS }}
           ANDROID_APP_SNS: ${{ secrets.ANDROID_APP_SNS }}
 
@@ -149,5 +159,7 @@ jobs:
           API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
           API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
           CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
+          CENTOVA_STREAM_URL: ${{ secrets.CENTOVA_STREAM_URL }}
+          TRACK_SOURCE: ${{ secrets.TRACK_SOURCE }}
           IOS_APP_SNS: ${{ secrets.IOS_APP_SNS }}
           ANDROID_APP_SNS: ${{ secrets.ANDROID_APP_SNS }}

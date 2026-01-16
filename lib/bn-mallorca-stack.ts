@@ -18,6 +18,8 @@ interface BnMallorcaStackProps extends StackProps {
   apiDomainAPIGatewayDomainName: string
   apiDomainHostedZoneId: string
   centovaUrl: string
+  centovaStreamUrl: string
+  trackSource: string
   iosAppSns: string
   androidAppSns: string
 }
@@ -39,6 +41,8 @@ export class BnMallorcaStack extends Stack {
       this.props.iosAppSns,
       this.props.androidAppSns,
       this.props.centovaUrl,
+      this.props.centovaStreamUrl,
+      this.props.trackSource,
       queues,
       tables,
       buckets,

@@ -9,10 +9,12 @@ import {
   isUnknownTrackForPlayer,
 } from '../helpers/track.helper'
 import { getCurrentTrackFromCentova } from '../net/centova.downloader'
+import { getTrackFromMetadataStream } from '../net/metadata'
 import { publishToSns } from '../net/sns'
 import { TrackListRepository } from '../repository/track-list.repository'
 import { Track, TrackList } from '../types/components'
 import { TrackDto } from '../types/components.dto'
+import { TrackSource } from '../types/track-source.enum'
 
 export class TrackService {
   private trackListRepository: TrackListRepository
@@ -23,8 +25,15 @@ export class TrackService {
     this.albumArtService = new AlbumArtService()
   }
 
-  public static async getCurrentTrackFromCentova(): Promise<Track> {
-    return await getCurrentTrackFromCentova()
+  public static async getCurrentTrack(): Promise<Track | undefined> {
+    switch (env.trackSource) {
+      case TrackSource.CENTOVA:
+        return await getCurrentTrackFromCentova()
+      case TrackSource.CENTOVA_METADATA:
+        return await getTrackFromMetadataStream(env.centovaStreamUrl)
+      default:
+        return undefined
+    }
   }
 
   public static filterOutAds(trackList: TrackList): TrackList {
