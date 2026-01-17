@@ -1,7 +1,7 @@
 import { Duration } from 'aws-cdk-lib';
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import type { Construct } from 'constructs';
 import type { BnBuckets } from './bucket.construct';
 import type { BnTables } from './database.construct';
@@ -48,7 +48,9 @@ export function createLambdas(
     functionName: `${envName}-cacheAlbumArtLambda`,
     entry: `${FUNCTION_DIR}/album-art/cache-album-art.lambda.ts`,
     timeout: Duration.seconds(10),
-    logRetention: RetentionDays.ONE_MONTH,
+    logGroup: new LogGroup(scope, `${envName}-bnmallorca-cacheAlbumArtLambdaLogGroup`, {
+      retention: RetentionDays.ONE_MONTH,
+    }),
     environment: {
       ALBUM_ART_BUCKET: albumArtBucket.bucketName,
       ALBUM_ART_TABLE: albumArtTable.tableName,
@@ -67,7 +69,9 @@ export function createLambdas(
     functionName: `${envName}-processNewTrackLambda`,
     entry: `${FUNCTION_DIR}/track/process-new-track.lambda.ts`,
     timeout: Duration.seconds(10),
-    logRetention: RetentionDays.ONE_MONTH,
+    logGroup: new LogGroup(scope, `${envName}-bnmallorca-processNewTrackLambdaLogGroup`, {
+      retention: RetentionDays.ONE_MONTH,
+    }),
     environment: {
       ALBUM_ART_BUCKET: albumArtBucket.bucketName,
       ALBUM_ART_TABLE: albumArtTable.tableName,
@@ -90,7 +94,9 @@ export function createLambdas(
     functionName: `${envName}-getTrackListLambda`,
     entry: `${FUNCTION_DIR}/track/get-track-list.lambda.ts`,
     timeout: Duration.seconds(10),
-    logRetention: RetentionDays.ONE_MONTH,
+    logGroup: new LogGroup(scope, `${envName}-bnmallorca-getTrackListLambdaLogGroup`, {
+      retention: RetentionDays.ONE_MONTH,
+    }),
     environment: {
       ALBUM_ART_BUCKET: albumArtBucket.bucketName,
       TRACK_LIST_TABLE: trackListTable.tableName,
@@ -109,7 +115,9 @@ export function createLambdas(
     functionName: `${envName}-getScheduleLambda`,
     entry: `${FUNCTION_DIR}/schedule/get-schedule.lambda.ts`,
     timeout: Duration.seconds(10),
-    logRetention: RetentionDays.ONE_MONTH,
+    logGroup: new LogGroup(scope, `${envName}-bnmallorca-getScheduleLambdaLogGroup`, {
+      retention: RetentionDays.ONE_MONTH,
+    }),
     environment: {
       SCHEDULE_TABLE: scheduleTable.tableName,
     },
@@ -126,7 +134,9 @@ export function createLambdas(
     functionName: `${envName}-pollNewTrackLambda`,
     entry: `${FUNCTION_DIR}/track/poll-new-track.lambda.ts`,
     timeout: Duration.seconds(10),
-    logRetention: RetentionDays.ONE_MONTH,
+    logGroup: new LogGroup(scope, `${envName}-bnmallorca-pollNewTrackLambdaLogGroup`, {
+      retention: RetentionDays.ONE_MONTH,
+    }),
     environment: {
       CENTOVA_URL: centovaUrl,
       TRACK_SOURCE: trackSource,
@@ -152,7 +162,9 @@ export function createLambdas(
     functionName: `${envName}-fillQueueLambda`,
     entry: `${FUNCTION_DIR}/track/fill-track-polling-queue.lambda.ts`,
     timeout: Duration.seconds(10),
-    logRetention: RetentionDays.ONE_MONTH,
+    logGroup: new LogGroup(scope, `${envName}-bnmallorca-fillQueueLambdaLogGroup`, {
+      retention: RetentionDays.ONE_MONTH,
+    }),
     environment: {
       POLL_QUEUE_URL: pollingQueue.queueUrl,
     },
@@ -169,7 +181,9 @@ export function createLambdas(
     functionName: `${envName}-registerDeviceLambda`,
     entry: `${FUNCTION_DIR}/device/register-device.lambda.ts`,
     timeout: Duration.seconds(10),
-    logRetention: RetentionDays.ONE_MONTH,
+    logGroup: new LogGroup(scope, `${envName}-bnmallorca-registerDeviceLambdaLogGroup`, {
+      retention: RetentionDays.ONE_MONTH,
+    }),
     environment: {
       NOTIFICATION_TOPIC: notificationsTopic.topicArn,
       IOS_APP_SNS: iosAppSns,
@@ -192,7 +206,9 @@ export function createLambdas(
       functionName: `${envName}-triggerRegisterDeviceLambda`,
       entry: `${FUNCTION_DIR}/device/trigger-async-register-device.lambda.ts`,
       timeout: Duration.seconds(10),
-      logRetention: RetentionDays.ONE_MONTH,
+      logGroup: new LogGroup(scope, `${envName}-bnmallorca-triggerRegisterDeviceLambdaLogGroup`, {
+        retention: RetentionDays.ONE_MONTH,
+      }),
       environment: {
         REGISTER_DEVICE_LAMBDA_ARN: registerDeviceLambda.functionArn,
       },
@@ -210,7 +226,9 @@ export function createLambdas(
     functionName: `${envName}-unregisterDeviceLambda`,
     entry: `${FUNCTION_DIR}/device/unregister-device.lambda.ts`,
     timeout: Duration.seconds(10),
-    logRetention: RetentionDays.ONE_MONTH,
+    logGroup: new LogGroup(scope, `${envName}-bnmallorca-unregisterDeviceLambdaLogGroup`, {
+      retention: RetentionDays.ONE_MONTH,
+    }),
     environment: {
       NOTIFICATION_TOPIC: notificationsTopic.topicArn,
       IOS_APP_SNS: iosAppSns,
@@ -230,7 +248,9 @@ export function createLambdas(
     functionName: `${envName}-deleteDevicesLambda`,
     entry: `${FUNCTION_DIR}/device/clean-devices.lambda.ts`,
     timeout: Duration.minutes(2),
-    logRetention: RetentionDays.ONE_MONTH,
+    logGroup: new LogGroup(scope, `${envName}-bnmallorca-deleteDevicesLambdaLogGroup`, {
+      retention: RetentionDays.ONE_MONTH,
+    }),
     environment: {
       NOTIFICATION_TOPIC: notificationsTopic.topicArn,
       IOS_APP_SNS: iosAppSns,
@@ -253,7 +273,9 @@ export function createLambdas(
       functionName: `${envName}-findDisabledDevicesLambda`,
       entry: `${FUNCTION_DIR}/device/find-unactive-devices.lambda.ts`,
       timeout: Duration.seconds(10),
-      logRetention: RetentionDays.ONE_MONTH,
+      logGroup: new LogGroup(scope, `${envName}-bnmallorca-findDisabledDevicesLambdaLogGroup`, {
+        retention: RetentionDays.ONE_MONTH,
+      }),
       environment: {
         NOTIFICATION_TOPIC: notificationsTopic.topicArn,
         IOS_APP_SNS: iosAppSns,
