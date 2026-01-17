@@ -43,7 +43,7 @@ export async function getTrackFromMetadataStream(streamUrl?: string): Promise<Tr
         resolve(track);
       };
 
-      metadataReader.onStream = async (stream) => {
+      metadataReader.onStream = async () => {
         try {
           while (true) {
             const { done, value } = await reader.read();
