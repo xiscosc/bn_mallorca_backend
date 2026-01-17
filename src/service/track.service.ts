@@ -32,7 +32,7 @@ export class TrackService {
       case TrackSource.CENTOVA:
         return await getCurrentTrackFromCentova();
       case TrackSource.CENTOVA_METADATA:
-        return await getTrackFromMetadataStream(env.centovaStreamUrl);
+        return await TrackService.getTrackFromMetadataStream(env.centovaStreamUrl);
       default:
         return undefined;
     }
@@ -116,5 +116,15 @@ export class TrackService {
       name: track.name,
       deleteTs: track.timestamp + 60 * 60 * 24 * 15, // 15 Days
     };
+  }
+
+  private static async getTrackFromMetadataStream(streamUrl?: string): Promise<Track | undefined> {
+    const metadataTrack = await getTrackFromMetadataStream(streamUrl);
+    if (metadataTrack) {
+      return metadataTrack;
+    }
+
+    log.warn('No track found in metadata stream, getting track from Centova');
+    return getCurrentTrackFromCentova();
   }
 }

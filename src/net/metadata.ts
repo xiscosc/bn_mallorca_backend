@@ -1,4 +1,4 @@
-import { Buffer } from 'node:buffer';
+import { IcecastMetadataReader } from 'icecast-metadata-js';
 import * as log from 'lambda-log';
 import type { Track } from '../types/components';
 
@@ -24,50 +24,55 @@ export async function getTrackFromMetadataStream(streamUrl?: string): Promise<Tr
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const icyMetaInt = parseInt(response.headers.get('icy-metaint') || '0', 10);
-
-    if (icyMetaInt === 0) {
-      throw new Error('Stream does not support metadata');
-    }
-
     const reader = response.body?.getReader();
     if (!reader) {
       throw new Error('Unable to read stream');
     }
 
-    let buffer = Buffer.alloc(0);
-    let bytesNeeded = icyMetaInt + 1;
+    const metadataReader = new IcecastMetadataReader();
 
-    while (buffer.length < bytesNeeded) {
-      const { done, value } = await reader.read();
+    return new Promise<Track | undefined>((resolve, reject) => {
+      let metadataReceived = false;
 
-      if (done) {
-        throw new Error('Stream ended before metadata');
-      }
+      metadataReader.onMetadata = (metadata) => {
+        metadataReceived = true;
+        clearTimeout(timeoutId);
+        reader.cancel();
 
-      buffer = Buffer.concat([buffer, Buffer.from(value)]);
-    }
+        const track = parseMetadata(metadata.StreamTitle);
+        resolve(track);
+      };
 
-    const metaLength = (buffer[icyMetaInt] ?? 0) * 16;
-    bytesNeeded = icyMetaInt + 1 + metaLength;
+      metadataReader.onStream = async (stream) => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
 
-    while (buffer.length < bytesNeeded) {
-      const { done, value } = await reader.read();
+            if (done) {
+              if (!metadataReceived) {
+                reject(new Error('Stream ended before metadata'));
+              }
+              break;
+            }
 
-      if (done) {
-        throw new Error('Stream ended before metadata');
-      }
+            metadataReader.readData(value);
+          }
+        } catch (error) {
+          if (!metadataReceived) {
+            reject(error);
+          }
+        }
+      };
 
-      buffer = Buffer.concat([buffer, Buffer.from(value)]);
-    }
+      metadataReader.onError = (error) => {
+        clearTimeout(timeoutId);
+        reader.cancel();
+        reject(error);
+      };
 
-    const metaData = buffer.subarray(icyMetaInt + 1, icyMetaInt + 1 + metaLength);
-    const metaString = metaData.toString('utf-8').replace(/\0+$/, '');
-
-    reader.cancel();
-    clearTimeout(timeoutId);
-
-    return parseMetadata(metaString);
+      // Start reading
+      metadataReader.onStream(new ReadableStream());
+    });
   } catch (error) {
     clearTimeout(timeoutId);
     log.error(`Error getting track from metadata ${JSON.stringify(error)}`);
@@ -75,28 +80,25 @@ export async function getTrackFromMetadataStream(streamUrl?: string): Promise<Tr
   }
 }
 
-function parseMetadata(metaString: string): Track | undefined {
+function parseMetadata(streamTitle?: string): Track | undefined {
+  if (!streamTitle) {
+    return undefined;
+  }
+
   const result: Track = {
     name: '',
     artist: '',
   };
 
-  const streamTitleMatch = metaString.match(/StreamTitle='([^']*)'/);
+  const separators = [' - ', ' – ', ' — ', ' | '];
+  const separator = separators.find((sep) => streamTitle.includes(sep));
 
-  if (streamTitleMatch?.[1]) {
-    const streamTitle = streamTitleMatch[1];
-
-    const separators = [' - ', ' – ', ' — ', ' | '];
-
-    const separator = separators.find((sep) => streamTitle.includes(sep));
-
-    if (separator) {
-      const parts = streamTitle.split(separator);
-      result.artist = parts[0]?.trim() ?? '';
-      result.name = parts.slice(1).join(separator).trim();
-    } else {
-      result.name = streamTitle;
-    }
+  if (separator) {
+    const parts = streamTitle.split(separator);
+    result.artist = parts[0]?.trim() ?? '';
+    result.name = parts.slice(1).join(separator).trim();
+  } else {
+    result.name = streamTitle;
   }
 
   return result.artist && result.name ? result : undefined;
