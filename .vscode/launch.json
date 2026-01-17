@@ -4,14 +4,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Test",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/test.ts",
-      "outFiles": ["${workspaceFolder}/**/*.js"],
+      "name": "Run with Bun",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["run", "${file}"],
       "envFile": "${workspaceFolder}/.env",
-      "runtimeArgs": ["-r", "ts-node/register"],
-      "sourceMaps": true,
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"]
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }
