@@ -1,22 +1,22 @@
-import { AttributeValue, DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import { type AttributeValue, DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   BatchWriteCommand,
   DynamoDBDocument,
-  DynamoDBDocumentClient,
+  type DynamoDBDocumentClient,
   QueryCommand,
-  QueryCommandInput,
-} from '@aws-sdk/lib-dynamodb'
-import _ from 'lodash'
+  type QueryCommandInput,
+} from '@aws-sdk/lib-dynamodb';
+import _ from 'lodash';
 
 export abstract class DynamoRepository<T> {
-  protected readonly table: string
-  protected client: DynamoDBDocumentClient
+  protected readonly table: string;
+  protected client: DynamoDBDocumentClient;
 
   protected constructor(tableName: string) {
-    this.table = tableName
+    this.table = tableName;
     this.client = DynamoDBDocument.from(new DynamoDBClient({}), {
       marshallOptions: { removeUndefinedValues: true },
-    })
+    });
   }
 
   protected async batchDelete(
@@ -24,39 +24,39 @@ export abstract class DynamoRepository<T> {
     partitionKey: string,
     sortKey?: string,
   ) {
-    const deleteRequests = values.map(value => {
+    const deleteRequests = values.map((value) => {
       const key: {
-        [x: string]: string | number
+        [x: string]: string | number;
       } = {
         [partitionKey]: value.partitionKey,
-      }
+      };
 
       if (sortKey && value.sortKey) {
-        key[sortKey] = value.sortKey
+        key[sortKey] = value.sortKey;
       }
 
       return {
         DeleteRequest: {
           Key: key,
         },
-      }
-    })
+      };
+    });
 
-    const chunkedRequests = _.chunk(deleteRequests, 25)
-    const batchPromises = chunkedRequests.map(requests => this.batchWrite(requests))
-    await Promise.all(batchPromises)
+    const chunkedRequests = _.chunk(deleteRequests, 25);
+    const batchPromises = chunkedRequests.map((requests) => this.batchWrite(requests));
+    await Promise.all(batchPromises);
   }
 
   protected async batchPut(dtoList: T[]) {
-    const putRequests = dtoList.map(dto => ({
+    const putRequests = dtoList.map((dto) => ({
       PutRequest: {
         Item: dto as Record<string, AttributeValue>,
       },
-    }))
+    }));
 
-    const chunkedRequests = _.chunk(putRequests, 25)
-    const batchPromises = chunkedRequests.map(requests => this.batchWrite(requests))
-    await Promise.all(batchPromises)
+    const chunkedRequests = _.chunk(putRequests, 25);
+    const batchPromises = chunkedRequests.map((requests) => this.batchWrite(requests));
+    await Promise.all(batchPromises);
   }
 
   protected async getBySecondaryIndex(
@@ -74,15 +74,15 @@ export abstract class DynamoRepository<T> {
       ExpressionAttributeValues: {
         ':iv': partitionKeyValue,
       },
-    }
+    };
 
-    const command = new QueryCommand(params)
-    const response = await this.client.send(command)
+    const command = new QueryCommand(params);
+    const response = await this.client.send(command);
     if (response.Items && response.Items.length > 0) {
-      return response.Items[0] as T
+      return response.Items[0] as T;
     }
 
-    return null
+    return null;
   }
 
   protected async getBySecondaryIndexWithSortKey(
@@ -104,15 +104,15 @@ export abstract class DynamoRepository<T> {
       },
       ScanIndexForward: ascendent,
       Limit: limit,
-    }
+    };
 
-    const command = new QueryCommand(params)
-    const response = await this.client.send(command)
+    const command = new QueryCommand(params);
+    const response = await this.client.send(command);
     if (response.Items && response.Items.length > 0) {
-      return response.Items as T[]
+      return response.Items as T[];
     }
 
-    return []
+    return [];
   }
 
   private async batchWrite(
@@ -124,8 +124,8 @@ export abstract class DynamoRepository<T> {
       RequestItems: {
         [this.table]: requests,
       },
-    }
+    };
 
-    await this.client.send(new BatchWriteCommand(params))
+    await this.client.send(new BatchWriteCommand(params));
   }
 }

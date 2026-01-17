@@ -1,7 +1,0 @@
-node_modules/
-dist/
-cdk.out/
-jest.out/
-**/*.md
-**/*.yaml
-test.ts

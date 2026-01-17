@@ -1,4 +1,7 @@
-import { APIGatewayEventIdentity, APIGatewayEventRequestContextWithAuthorizer } from 'aws-lambda'
+import type {
+  APIGatewayEventIdentity,
+  APIGatewayEventRequestContextWithAuthorizer,
+} from 'aws-lambda';
 
 const identity: APIGatewayEventIdentity = {
   accessKey: null,
@@ -16,7 +19,7 @@ const identity: APIGatewayEventIdentity = {
   user: null,
   userAgent: null,
   userArn: null,
-}
+};
 export const requestContext: APIGatewayEventRequestContextWithAuthorizer<undefined> = {
   accountId: 'testAccountId',
   apiId: 'testApiId',
@@ -30,4 +33,4 @@ export const requestContext: APIGatewayEventRequestContextWithAuthorizer<undefin
   requestTimeEpoch: 0,
   resourceId: '',
   resourcePath: '',
-}
+};

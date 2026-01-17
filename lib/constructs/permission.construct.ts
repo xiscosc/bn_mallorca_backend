@@ -1,11 +1,11 @@
-import { Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam'
-import { Construct } from 'constructs'
-import { BnBuckets } from './bucket.construct'
-import { BnTables } from './database.construct'
-import { BnLambdas } from './lambda.construct'
-import { BnQueues } from './queue.construct'
-import { BnSecrets } from './secret.construct'
-import { BnTopics } from './topic.construct'
+import { Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import type { Construct } from 'constructs';
+import type { BnBuckets } from './bucket.construct';
+import type { BnTables } from './database.construct';
+import type { BnLambdas } from './lambda.construct';
+import type { BnQueues } from './queue.construct';
+import type { BnSecrets } from './secret.construct';
+import type { BnTopics } from './topic.construct';
 
 export function createPermissions(
   scope: Construct,
@@ -31,68 +31,68 @@ export function createPermissions(
   { albumArtBucket }: BnBuckets,
   { spotifyClientId, spotifySecret }: BnSecrets,
 ) {
-  cacheAlbumArtLambda.grantInvoke(processNewTrackLambda)
-  cacheAlbumArtLambda.grantInvoke(pollNewTrackLambda)
+  cacheAlbumArtLambda.grantInvoke(processNewTrackLambda);
+  cacheAlbumArtLambda.grantInvoke(pollNewTrackLambda);
 
-  registerDeviceLambda.grantInvoke(triggerRegisterDeviceLambda)
+  registerDeviceLambda.grantInvoke(triggerRegisterDeviceLambda);
 
-  trackListTable.grantWriteData(processNewTrackLambda)
-  trackListTable.grantReadData(getTrackListLambda)
-  trackListTable.grantReadWriteData(pollNewTrackLambda)
+  trackListTable.grantWriteData(processNewTrackLambda);
+  trackListTable.grantReadData(getTrackListLambda);
+  trackListTable.grantReadWriteData(pollNewTrackLambda);
 
-  scheduleTable.grantReadData(getScheduleLambda)
+  scheduleTable.grantReadData(getScheduleLambda);
 
-  albumArtTable.grantWriteData(cacheAlbumArtLambda)
-  albumArtTable.grantReadData(processNewTrackLambda)
-  albumArtTable.grantReadData(pollNewTrackLambda)
-  albumArtTable.grantReadData(getTrackListLambda)
+  albumArtTable.grantWriteData(cacheAlbumArtLambda);
+  albumArtTable.grantReadData(processNewTrackLambda);
+  albumArtTable.grantReadData(pollNewTrackLambda);
+  albumArtTable.grantReadData(getTrackListLambda);
 
-  albumArtBucket.grantWrite(cacheAlbumArtLambda)
+  albumArtBucket.grantWrite(cacheAlbumArtLambda);
 
-  notificationsTopic.grantPublish(processNewTrackLambda)
-  notificationsTopic.grantPublish(pollNewTrackLambda)
+  notificationsTopic.grantPublish(processNewTrackLambda);
+  notificationsTopic.grantPublish(pollNewTrackLambda);
 
-  spotifySecret.grantRead(processNewTrackLambda)
-  spotifySecret.grantRead(pollNewTrackLambda)
-  spotifyClientId.grantRead(processNewTrackLambda)
-  spotifyClientId.grantRead(pollNewTrackLambda)
+  spotifySecret.grantRead(processNewTrackLambda);
+  spotifySecret.grantRead(pollNewTrackLambda);
+  spotifyClientId.grantRead(processNewTrackLambda);
+  spotifyClientId.grantRead(pollNewTrackLambda);
 
-  pollingQueue.grantSendMessages(fillQueueLambda)
+  pollingQueue.grantSendMessages(fillQueueLambda);
 
-  deviceTable.grantReadWriteData(registerDeviceLambda)
-  deviceTable.grantReadWriteData(unregisterDeviceLambda)
-  deviceTable.grantReadWriteData(deleteDevicesLambda)
-  deviceTable.grantReadWriteData(findDisabledDevicesLambda)
+  deviceTable.grantReadWriteData(registerDeviceLambda);
+  deviceTable.grantReadWriteData(unregisterDeviceLambda);
+  deviceTable.grantReadWriteData(deleteDevicesLambda);
+  deviceTable.grantReadWriteData(findDisabledDevicesLambda);
 
   const snsRegisterPolicy = new PolicyStatement({
     actions: ['sns:CreatePlatformEndpoint'],
     resources: [iosAppSns, androidAppSns],
-  })
+  });
 
   const snsSubscribePolicy = new PolicyStatement({
     actions: ['sns:Subscribe'],
     resources: [notificationsTopic.topicArn],
-  })
+  });
 
   registerDeviceLambda.role?.attachInlinePolicy(
     new Policy(scope, `${envName}-registerDevicePolicy`, {
       statements: [snsRegisterPolicy, snsSubscribePolicy],
     }),
-  )
+  );
 
   const deleteEndpointPolicy = new PolicyStatement({
     actions: ['sns:DeleteEndpoint'],
     resources: ['*'],
-  })
+  });
 
   const unsubscribePolicy = new PolicyStatement({
     actions: ['sns:Unsubscribe'],
     resources: ['*'],
-  })
+  });
 
   deleteDevicesLambda.role?.attachInlinePolicy(
     new Policy(scope, `${envName}-deleteDevicesPolicy`, {
       statements: [deleteEndpointPolicy, unsubscribePolicy],
     }),
-  )
+  );
 }

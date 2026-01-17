@@ -1,9 +1,9 @@
-import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3'
-import { Construct } from 'constructs'
+import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3';
+import type { Construct } from 'constructs';
 
 export type BnBuckets = {
-  albumArtBucket: Bucket
-}
+  albumArtBucket: Bucket;
+};
 
 export function createBuckets(scope: Construct, envName: string): BnBuckets {
   const albumArtBucket = new Bucket(scope, `${envName}-albumArtBucket`, {
@@ -16,9 +16,9 @@ export function createBuckets(scope: Construct, envName: string): BnBuckets {
       ignorePublicAcls: false,
       restrictPublicBuckets: false,
     }),
-  })
+  });
 
   return {
     albumArtBucket,
-  }
+  };
 }

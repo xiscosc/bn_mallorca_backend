@@ -1,0 +1,11 @@
+name: Deploy to Production
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/aws-deploy-common.yml
+    with:
+      cdk_env_name: prod
+      env_name: production
+    secrets: inherit

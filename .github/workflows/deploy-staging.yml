@@ -1,0 +1,13 @@
+name: Deploy to Staging
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/aws-deploy-common.yml
+    with:
+      cdk_env_name: dev
+      env_name: staging
+    secrets: inherit

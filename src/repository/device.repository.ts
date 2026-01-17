@@ -1,34 +1,45 @@
-import { GetCommand, GetCommandInput, PutCommand, PutCommandInput, QueryCommand } from '@aws-sdk/lib-dynamodb'
-
-import { DynamoRepository } from './dynamo-repository'
-import { env } from '../config/env'
-import { DeviceDto } from '../types/components.dto'
+import {
+  GetCommand,
+  type GetCommandInput,
+  PutCommand,
+  type PutCommandInput,
+  QueryCommand,
+} from '@aws-sdk/lib-dynamodb';
+import { env } from '../config/env';
+import type { DeviceDto } from '../types/components.dto';
+import { DynamoRepository } from './dynamo-repository';
 
 export class DeviceRepository extends DynamoRepository<DeviceDto> {
   constructor() {
-    super(env.deviceTable)
+    super(env.deviceTable);
   }
 
   public async getDevice(token: string): Promise<DeviceDto | undefined> {
     const input: GetCommandInput = {
       TableName: this.table,
       Key: { token },
-    }
+    };
 
-    const result = await this.client.send(new GetCommand(input))
-    return (result?.Item as DeviceDto) ?? undefined
+    const result = await this.client.send(new GetCommand(input));
+    return (result?.Item as DeviceDto) ?? undefined;
   }
 
   public async putDevice(device: DeviceDto) {
     const input: PutCommandInput = {
       TableName: this.table,
       Item: device,
-    }
-    await this.client.send(new PutCommand(input))
+    };
+    await this.client.send(new PutCommand(input));
   }
 
   public async getDevicesByStatus(status: number, limit?: number): Promise<DeviceDto[]> {
-    return await this.getBySecondaryIndexWithSortKey('statusSubscribedAtIndex', 'status', status, true, limit)
+    return await this.getBySecondaryIndexWithSortKey(
+      'statusSubscribedAtIndex',
+      'status',
+      status,
+      true,
+      limit,
+    );
   }
 
   public async getNotRenewedDevices(status: number, ts: number): Promise<DeviceDto[]> {
@@ -44,18 +55,18 @@ export class DeviceRepository extends DynamoRepository<DeviceDto> {
         ':status': status,
         ':subscribedAt': ts,
       },
-    }
+    };
 
-    const data = await this.client.send(new QueryCommand(params))
-    return (data.Items as DeviceDto[]) ?? []
+    const data = await this.client.send(new QueryCommand(params));
+    return (data.Items as DeviceDto[]) ?? [];
   }
 
   public async deleteDevices(tokens: string[]) {
-    const requests = tokens.map(t => ({ partitionKey: t }))
-    await this.batchDelete(requests, 'token')
+    const requests = tokens.map((t) => ({ partitionKey: t }));
+    await this.batchDelete(requests, 'token');
   }
 
   public async createDevices(devices: DeviceDto[]): Promise<void> {
-    await this.batchPut(devices)
+    await this.batchPut(devices);
   }
 }

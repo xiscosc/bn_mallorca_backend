@@ -1,0 +1,120 @@
+name: AWS Deploy Common
+on:
+  workflow_call:
+    inputs:
+      cdk_env_name:
+        required: true
+        type: string
+        description: "CDK environment name (dev/prod)"
+      env_name:
+        required: true
+        type: string
+        description: "GitHub environment name (staging/production)"
+    secrets:
+      AWS_ACCESS_KEY:
+        required: true
+      AWS_SECRET_KEY:
+        required: true
+      JWT_SECRET_ARN:
+        required: true
+      SPOTIFY_CLIENT_ID_ARN:
+        required: true
+      SPOTIFY_SECRET_ID_ARN:
+        required: true
+      API_DOMAIN_NAME:
+        required: true
+      API_DOMAIN_GATEWAY_NAME:
+        required: true
+      API_DOMAIN_HOSTED_ZONE_ID:
+        required: true
+      CENTOVA_URL:
+        required: true
+      CENTOVA_STREAM_URL:
+        required: true
+      TRACK_SOURCE:
+        required: true
+      IOS_APP_SNS:
+        required: true
+      ANDROID_APP_SNS:
+        required: true
+
+env:
+  AWS_REGION: "eu-central-1"
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.env_name }}
+    environment: ${{ inputs.env_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install
+        run: bun install
+
+      - name: Generate OpenAPI
+        run: bun run generate:openapi
+
+      - name: Build
+        run: bun run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Bootstrap
+        run: bun run cdk bootstrap
+        env:
+          ENV_NAME: ${{ inputs.cdk_env_name }}
+          JWT_SECRET_ARN: ${{ secrets.JWT_SECRET_ARN }}
+          SPOTIFY_CLIENT_ID_ARN: ${{ secrets.SPOTIFY_CLIENT_ID_ARN }}
+          SPOTIFY_SECRET_ID_ARN: ${{ secrets.SPOTIFY_SECRET_ID_ARN }}
+          API_DOMAIN_NAME: ${{ secrets.API_DOMAIN_NAME }}
+          API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
+          API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
+          CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
+          CENTOVA_STREAM_URL: ${{ secrets.CENTOVA_STREAM_URL }}
+          TRACK_SOURCE: ${{ secrets.TRACK_SOURCE }}
+          IOS_APP_SNS: ${{ secrets.IOS_APP_SNS }}
+          ANDROID_APP_SNS: ${{ secrets.ANDROID_APP_SNS }}
+
+      - name: Diff stack
+        run: bun run cdk diff
+        env:
+          ENV_NAME: ${{ inputs.cdk_env_name }}
+          JWT_SECRET_ARN: ${{ secrets.JWT_SECRET_ARN }}
+          SPOTIFY_CLIENT_ID_ARN: ${{ secrets.SPOTIFY_CLIENT_ID_ARN }}
+          SPOTIFY_SECRET_ID_ARN: ${{ secrets.SPOTIFY_SECRET_ID_ARN }}
+          API_DOMAIN_NAME: ${{ secrets.API_DOMAIN_NAME }}
+          API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
+          API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
+          CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
+          CENTOVA_STREAM_URL: ${{ secrets.CENTOVA_STREAM_URL }}
+          TRACK_SOURCE: ${{ secrets.TRACK_SOURCE }}
+          IOS_APP_SNS: ${{ secrets.IOS_APP_SNS }}
+          ANDROID_APP_SNS: ${{ secrets.ANDROID_APP_SNS }}
+
+      - name: Deploy stack
+        run: bunx cdk deploy --all --require-approval never
+        env:
+          ENV_NAME: ${{ inputs.cdk_env_name }}
+          JWT_SECRET_ARN: ${{ secrets.JWT_SECRET_ARN }}
+          SPOTIFY_CLIENT_ID_ARN: ${{ secrets.SPOTIFY_CLIENT_ID_ARN }}
+          SPOTIFY_SECRET_ID_ARN: ${{ secrets.SPOTIFY_SECRET_ID_ARN }}
+          API_DOMAIN_NAME: ${{ secrets.API_DOMAIN_NAME }}
+          API_DOMAIN_GATEWAY_NAME: ${{ secrets.API_DOMAIN_GATEWAY_NAME }}
+          API_DOMAIN_HOSTED_ZONE_ID: ${{ secrets.API_DOMAIN_HOSTED_ZONE_ID }}
+          CENTOVA_URL: ${{ secrets.CENTOVA_URL }}
+          CENTOVA_STREAM_URL: ${{ secrets.CENTOVA_STREAM_URL }}
+          TRACK_SOURCE: ${{ secrets.TRACK_SOURCE }}
+          IOS_APP_SNS: ${{ secrets.IOS_APP_SNS }}
+          ANDROID_APP_SNS: ${{ secrets.ANDROID_APP_SNS }}

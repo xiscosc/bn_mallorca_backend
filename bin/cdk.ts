@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-import { BnMallorcaApp } from '../lib/bn-mallorca'
+import { BnMallorcaApp } from '../lib/bn-mallorca';
 
-new BnMallorcaApp()
+new BnMallorcaApp();

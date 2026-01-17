@@ -1,30 +1,30 @@
-import { Duration } from 'aws-cdk-lib'
-import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda'
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs'
-import { RetentionDays } from 'aws-cdk-lib/aws-logs'
-import { Construct } from 'constructs'
-import { BnBuckets } from './bucket.construct'
-import { BnTables } from './database.construct'
-import { BnQueues } from './queue.construct'
-import { BnSecrets } from './secret.construct'
-import { BnTopics } from './topic.construct'
+import { Duration } from 'aws-cdk-lib';
+import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import type { Construct } from 'constructs';
+import type { BnBuckets } from './bucket.construct';
+import type { BnTables } from './database.construct';
+import type { BnQueues } from './queue.construct';
+import type { BnSecrets } from './secret.construct';
+import type { BnTopics } from './topic.construct';
 
-const FUNCTION_DIR = `${__dirname}/../../src/function`
-const DEFAULT_RUNTIME = Runtime.NODEJS_22_X
+const FUNCTION_DIR = `${__dirname}/../../src/function`;
+const DEFAULT_RUNTIME = Runtime.NODEJS_24_X;
 
 export type BnLambdas = {
-  cacheAlbumArtLambda: NodejsFunction
-  processNewTrackLambda: NodejsFunction
-  getTrackListLambda: NodejsFunction
-  getScheduleLambda: NodejsFunction
-  pollNewTrackLambda: NodejsFunction
-  fillQueueLambda: NodejsFunction
-  registerDeviceLambda: NodejsFunction
-  unregisterDeviceLambda: NodejsFunction
-  deleteDevicesLambda: NodejsFunction
-  findDisabledDevicesLambda: NodejsFunction
-  triggerRegisterDeviceLambda: NodejsFunction
-}
+  cacheAlbumArtLambda: NodejsFunction;
+  processNewTrackLambda: NodejsFunction;
+  getTrackListLambda: NodejsFunction;
+  getScheduleLambda: NodejsFunction;
+  pollNewTrackLambda: NodejsFunction;
+  fillQueueLambda: NodejsFunction;
+  registerDeviceLambda: NodejsFunction;
+  unregisterDeviceLambda: NodejsFunction;
+  deleteDevicesLambda: NodejsFunction;
+  findDisabledDevicesLambda: NodejsFunction;
+  triggerRegisterDeviceLambda: NodejsFunction;
+};
 
 export function createLambdas(
   scope: Construct,
@@ -56,7 +56,7 @@ export function createLambdas(
     bundling: {
       minify: true,
     },
-  })
+  });
 
   // For testing purposes
   const processNewTrackLambda = new NodejsFunction(scope, `${envName}-processNewTrackLambda`, {
@@ -80,7 +80,7 @@ export function createLambdas(
     bundling: {
       minify: true,
     },
-  })
+  });
 
   const getTrackListLambda = new NodejsFunction(scope, `${envName}-getTrackListLambda`, {
     runtime: DEFAULT_RUNTIME,
@@ -99,7 +99,7 @@ export function createLambdas(
     bundling: {
       minify: true,
     },
-  })
+  });
 
   const getScheduleLambda = new NodejsFunction(scope, `${envName}-getScheduleLambda`, {
     runtime: DEFAULT_RUNTIME,
@@ -116,7 +116,7 @@ export function createLambdas(
     bundling: {
       minify: true,
     },
-  })
+  });
 
   const pollNewTrackLambda = new NodejsFunction(scope, `${envName}-pollNewTrackLambda`, {
     runtime: DEFAULT_RUNTIME,
@@ -142,7 +142,7 @@ export function createLambdas(
     bundling: {
       minify: true,
     },
-  })
+  });
 
   const fillQueueLambda = new NodejsFunction(scope, `${envName}-fillQueueLambda`, {
     runtime: DEFAULT_RUNTIME,
@@ -159,7 +159,7 @@ export function createLambdas(
     bundling: {
       minify: true,
     },
-  })
+  });
 
   const registerDeviceLambda = new NodejsFunction(scope, `${envName}-registerDeviceLambda`, {
     runtime: DEFAULT_RUNTIME,
@@ -179,24 +179,28 @@ export function createLambdas(
     bundling: {
       minify: true,
     },
-  })
+  });
 
-  const triggerRegisterDeviceLambda = new NodejsFunction(scope, `${envName}-triggerRegisterDeviceLambda`, {
-    runtime: DEFAULT_RUNTIME,
-    architecture: Architecture.ARM_64,
-    handler: 'handler',
-    memorySize: 2048,
-    functionName: `${envName}-triggerRegisterDeviceLambda`,
-    entry: `${FUNCTION_DIR}/device/trigger-async-register-device.lambda.ts`,
-    timeout: Duration.seconds(10),
-    logRetention: RetentionDays.ONE_MONTH,
-    environment: {
-      REGISTER_DEVICE_LAMBDA_ARN: registerDeviceLambda.functionArn,
+  const triggerRegisterDeviceLambda = new NodejsFunction(
+    scope,
+    `${envName}-triggerRegisterDeviceLambda`,
+    {
+      runtime: DEFAULT_RUNTIME,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 2048,
+      functionName: `${envName}-triggerRegisterDeviceLambda`,
+      entry: `${FUNCTION_DIR}/device/trigger-async-register-device.lambda.ts`,
+      timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
+      environment: {
+        REGISTER_DEVICE_LAMBDA_ARN: registerDeviceLambda.functionArn,
+      },
+      bundling: {
+        minify: true,
+      },
     },
-    bundling: {
-      minify: true,
-    },
-  })
+  );
 
   const unregisterDeviceLambda = new NodejsFunction(scope, `${envName}-unregisterDeviceLambda`, {
     runtime: DEFAULT_RUNTIME,
@@ -216,7 +220,7 @@ export function createLambdas(
     bundling: {
       minify: true,
     },
-  })
+  });
 
   const deleteDevicesLambda = new NodejsFunction(scope, `${envName}-deleteDevicesLambda`, {
     runtime: DEFAULT_RUNTIME,
@@ -236,27 +240,31 @@ export function createLambdas(
     bundling: {
       minify: true,
     },
-  })
+  });
 
-  const findDisabledDevicesLambda = new NodejsFunction(scope, `${envName}-findDisabledDevicesLambda`, {
-    runtime: DEFAULT_RUNTIME,
-    architecture: Architecture.ARM_64,
-    handler: 'handler',
-    memorySize: 256,
-    functionName: `${envName}-findDisabledDevicesLambda`,
-    entry: `${FUNCTION_DIR}/device/find-unactive-devices.lambda.ts`,
-    timeout: Duration.seconds(10),
-    logRetention: RetentionDays.ONE_MONTH,
-    environment: {
-      NOTIFICATION_TOPIC: notificationsTopic.topicArn,
-      IOS_APP_SNS: iosAppSns,
-      ANDROID_APP_SNS: androidAppSns,
-      DEVICE_TABLE: deviceTable.tableName,
+  const findDisabledDevicesLambda = new NodejsFunction(
+    scope,
+    `${envName}-findDisabledDevicesLambda`,
+    {
+      runtime: DEFAULT_RUNTIME,
+      architecture: Architecture.ARM_64,
+      handler: 'handler',
+      memorySize: 256,
+      functionName: `${envName}-findDisabledDevicesLambda`,
+      entry: `${FUNCTION_DIR}/device/find-unactive-devices.lambda.ts`,
+      timeout: Duration.seconds(10),
+      logRetention: RetentionDays.ONE_MONTH,
+      environment: {
+        NOTIFICATION_TOPIC: notificationsTopic.topicArn,
+        IOS_APP_SNS: iosAppSns,
+        ANDROID_APP_SNS: androidAppSns,
+        DEVICE_TABLE: deviceTable.tableName,
+      },
+      bundling: {
+        minify: true,
+      },
     },
-    bundling: {
-      minify: true,
-    },
-  })
+  );
 
   return {
     cacheAlbumArtLambda,
@@ -270,5 +278,5 @@ export function createLambdas(
     deleteDevicesLambda,
     findDisabledDevicesLambda,
     triggerRegisterDeviceLambda,
-  }
+  };
 }
