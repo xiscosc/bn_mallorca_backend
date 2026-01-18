@@ -44,21 +44,20 @@ function parseMetadata(streamTitle?: string): Track | undefined {
     return undefined;
   }
 
-  const result: Track = {
-    name: '',
-    artist: '',
-  };
-
   const separators = [' - ', ' – ', ' — ', ' | '];
   const separator = separators.find((sep) => streamTitle.includes(sep));
 
-  if (separator) {
-    const parts = streamTitle.split(separator);
-    result.artist = parts[0]?.trim() ?? '';
-    result.name = parts.slice(1).join(separator).trim();
-  } else {
-    result.name = streamTitle;
+  if (!separator) return undefined;
+
+  const parts = streamTitle.split(separator);
+  const artist = parts[0]?.trim() ?? '';
+  let nameParts = parts.slice(1);
+
+  // Dedupe if artist is repeated at the start of the name
+  if (nameParts[0]?.trim() === artist) {
+    nameParts = nameParts.slice(1);
   }
 
-  return result.artist && result.name ? result : undefined;
+  const name = nameParts.join(separator).trim();
+  return artist && name ? { artist, name } : undefined;
 }
