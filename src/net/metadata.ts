@@ -1,4 +1,4 @@
-import { IcecastMetadataReader } from 'icecast-metadata-js';
+import { IcecastReadableStream } from 'icecast-metadata-js';
 import * as log from 'lambda-log';
 import type { Track } from '../types/components';
 
@@ -13,10 +13,7 @@ export async function getTrackFromMetadataStream(streamUrl?: string): Promise<Tr
 
   try {
     const response = await fetch(streamUrl, {
-      headers: {
-        'Icy-MetaData': '1',
-        'User-Agent': 'Mozilla/5.0',
-      },
+      headers: { 'Icy-MetaData': '1', 'User-Agent': 'Mozilla/5.0' },
       signal: controller.signal,
     });
 
@@ -24,58 +21,20 @@ export async function getTrackFromMetadataStream(streamUrl?: string): Promise<Tr
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const reader = response.body?.getReader();
-    if (!reader) {
-      throw new Error('Unable to read stream');
-    }
+    return new Promise<Track | undefined>((resolve) => {
+      const icecast = new IcecastReadableStream(response, {
+        metadataTypes: ['icy'],
+        onMetadata: ({ metadata }) => {
+          clearTimeout(timeoutId);
+          controller.abort();
+          resolve(parseMetadata(metadata.StreamTitle));
+        },
+      });
 
-    const metadataReader = new IcecastMetadataReader();
-
-    return new Promise<Track | undefined>((resolve, reject) => {
-      let metadataReceived = false;
-
-      metadataReader.onMetadata = (metadata) => {
-        metadataReceived = true;
-        clearTimeout(timeoutId);
-        reader.cancel();
-
-        const track = parseMetadata(metadata.StreamTitle);
-        resolve(track);
-      };
-
-      metadataReader.onStream = async () => {
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-
-            if (done) {
-              if (!metadataReceived) {
-                reject(new Error('Stream ended before metadata'));
-              }
-              break;
-            }
-
-            metadataReader.readData(value);
-          }
-        } catch (error) {
-          if (!metadataReceived) {
-            reject(error);
-          }
-        }
-      };
-
-      metadataReader.onError = (error) => {
-        clearTimeout(timeoutId);
-        reader.cancel();
-        reject(error);
-      };
-
-      // Start reading
-      metadataReader.onStream(new ReadableStream());
+      icecast.startReading().catch(() => resolve(undefined));
     });
-  } catch (error) {
+  } catch {
     clearTimeout(timeoutId);
-    log.error(`Error getting track from metadata ${JSON.stringify(error)}`);
     return undefined;
   }
 }
