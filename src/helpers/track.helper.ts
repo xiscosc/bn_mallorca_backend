@@ -17,6 +17,7 @@ const bnNames = [
   'nos saludan',
   'not defined',
   'unknown',
+  'promo',
 ];
 
 export function getTrackId(track: Track): string {

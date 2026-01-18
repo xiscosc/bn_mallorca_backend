@@ -24,6 +24,7 @@ export async function getTrackFromMetadataStream(streamUrl?: string): Promise<Tr
     return new Promise<Track | undefined>((resolve) => {
       const icecast = new IcecastReadableStream(response, {
         metadataTypes: ['icy'],
+        icyCharacterEncoding: 'iso-8859-1',
         onMetadata: ({ metadata }) => {
           clearTimeout(timeoutId);
           controller.abort();

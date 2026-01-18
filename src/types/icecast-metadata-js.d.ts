@@ -12,6 +12,7 @@ declare module 'icecast-metadata-js' {
 
   export interface IcecastReadableStreamOptions {
     metadataTypes?: Array<'icy' | 'ogg'>;
+    icyCharacterEncoding?: string;
     onMetadata?: (value: IcecastMetadataValue) => void;
   }
 
