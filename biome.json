@@ -7,7 +7,20 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json"]
+    "includes": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.json",
+      "!!node_modules",
+      "!!dist",
+      "!!cdk.out",
+      "!!jest.out",
+      "!!jest.config.json",
+      "!!src/generated",
+      "!!.claude"
+    ]
   },
   "linter": {
     "enabled": true,

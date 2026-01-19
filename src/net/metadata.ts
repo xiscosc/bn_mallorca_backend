@@ -40,17 +40,34 @@ export async function getTrackFromMetadataStream(streamUrl?: string): Promise<Tr
   }
 }
 
+function sanitizeString(str: string): string {
+  return (
+    str
+      // biome-ignore lint/suspicious/noControlCharactersInRegex: Intentionally matching control characters to remove them
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '')
+      // Replace common curly quotes/apostrophes with straight versions
+      .replace(/[''‚]/g, "'")
+      .replace(/[""„]/g, '"')
+      // Remove Unicode replacement character
+      .replace(/\uFFFD/g, '')
+      // Normalize multiple spaces to single space
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
+}
+
 function parseMetadata(streamTitle?: string): Track | undefined {
   if (!streamTitle) {
     return undefined;
   }
 
+  const sanitizedTitle = sanitizeString(streamTitle);
   const separators = [' - ', ' – ', ' — ', ' | '];
-  const separator = separators.find((sep) => streamTitle.includes(sep));
+  const separator = separators.find((sep) => sanitizedTitle.includes(sep));
 
   if (!separator) return undefined;
 
-  const parts = streamTitle.split(separator);
+  const parts = sanitizedTitle.split(separator);
   const artist = parts[0]?.trim() ?? '';
   let nameParts = parts.slice(1);
 

@@ -1,9 +1,0 @@
-node_modules/
-dist/
-cdk.out/
-jest.out/
-jest.config.json
-src/generated
-**/*.md
-**/*.yaml
-test.ts
