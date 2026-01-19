@@ -16,7 +16,7 @@ export type DeviceDto = {
   token: string;
   status: number;
   type: string;
-  endopintArn: string;
+  endpointArn: string;
   subscriptionArn: string;
   subscribedAt: number;
 };

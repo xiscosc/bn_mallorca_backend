@@ -1,5 +1,6 @@
-import * as log from 'lambda-log';
+import { extractErrorMessage } from '../../helpers/error.helper';
 import { stringIsValid } from '../../helpers/lambda.helper';
+import { log } from '../../helpers/logger';
 import { TrackService } from '../../service/track.service';
 import type { Track } from '../../types/components';
 
@@ -14,7 +15,7 @@ export async function handler(track?: Track): Promise<void> {
   try {
     await trackService.processTrack(track);
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
+    const errorMessage = extractErrorMessage(err);
     log.error(`Error processing Track: ${errorMessage} - ${JSON.stringify(track)}`);
     throw new Error(`Error processing Track: ${errorMessage} - ${JSON.stringify(track)}`);
   }

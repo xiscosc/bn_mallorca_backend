@@ -1,4 +1,5 @@
-import * as log from 'lambda-log';
+import { extractErrorMessage } from '../../helpers/error.helper';
+import { log } from '../../helpers/logger';
 import { DeviceService } from '../../service/device.service';
 
 export async function handler(event: unknown): Promise<void> {
@@ -7,6 +8,6 @@ export async function handler(event: unknown): Promise<void> {
     await deviceService.markUnactiveDevices();
     if (event !== undefined) log.info(JSON.stringify(event));
   } catch (e: unknown) {
-    log.error(`error marking devices - ${e}`);
+    log.error(`error marking devices - ${extractErrorMessage(e)}`);
   }
 }

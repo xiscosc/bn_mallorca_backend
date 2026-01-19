@@ -1,6 +1,6 @@
 import { ScanCommand, type ScanCommandInput } from '@aws-sdk/lib-dynamodb';
-import * as log from 'lambda-log';
 import { env } from '../config/env';
+import { log } from '../helpers/logger';
 import type { ShowDto } from '../types/components.dto';
 import { DynamoRepository } from './dynamo-repository';
 

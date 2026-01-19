@@ -1,7 +1,8 @@
 import type { APIGatewayEvent, ProxyResult } from 'aws-lambda';
-import * as log from 'lambda-log';
 import { env } from '../../config/env';
+import { extractErrorMessage } from '../../helpers/error.helper';
 import { badRequest, internalServerError, ok, stringIsValid } from '../../helpers/lambda.helper';
+import { log } from '../../helpers/logger';
 import { triggerAsyncLambda } from '../../net/lambda';
 import type { DeviceToken } from '../../types/components';
 
@@ -23,8 +24,7 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
     });
     return ok({ message: 'Device registered' });
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    log.error(`Error registering device: ${errorMessage}`);
+    log.error(`Error registering device: ${extractErrorMessage(err)}`);
     return internalServerError({ message: 'Device could not be registered' });
   }
 }

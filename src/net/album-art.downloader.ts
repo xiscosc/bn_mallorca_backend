@@ -1,4 +1,5 @@
-import * as log from 'lambda-log';
+import { extractErrorMessage } from '../helpers/error.helper';
+import { log } from '../helpers/logger';
 
 export async function albumArtUrlToBuffer(url: string): Promise<Buffer | undefined> {
   try {
@@ -6,8 +7,7 @@ export async function albumArtUrlToBuffer(url: string): Promise<Buffer | undefin
     const arrayBuffer = await response.arrayBuffer();
     return Buffer.from(arrayBuffer);
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    log.error(`Error downloading image: ${errorMessage} - ${url}`);
+    log.error(`Error downloading image: ${extractErrorMessage(err)} - ${url}`);
     return undefined;
   }
 }

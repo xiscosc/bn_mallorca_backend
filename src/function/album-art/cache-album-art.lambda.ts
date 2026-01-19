@@ -1,5 +1,6 @@
-import * as log from 'lambda-log';
+import { extractErrorMessage } from '../../helpers/error.helper';
 import { stringIsValid } from '../../helpers/lambda.helper';
+import { log } from '../../helpers/logger';
 import { AlbumArtService, type IAlbumCacheRequest } from '../../service/album-art.service';
 
 export async function handler({ trackId, albumArt }: IAlbumCacheRequest): Promise<void> {
@@ -12,7 +13,7 @@ export async function handler({ trackId, albumArt }: IAlbumCacheRequest): Promis
     const albumArtService = new AlbumArtService();
     await albumArtService.cacheAlbumArt({ trackId, albumArt });
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
+    const errorMessage = extractErrorMessage(err);
     log.error(`Error caching track album art: ${errorMessage} - ${JSON.stringify(trackId)}`);
     throw Error(`Error caching track album art: ${errorMessage} - ${JSON.stringify(trackId)}`);
   }

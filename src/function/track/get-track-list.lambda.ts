@@ -1,6 +1,7 @@
 import type { APIGatewayEvent, ProxyResult } from 'aws-lambda';
-import * as log from 'lambda-log';
+import { extractErrorMessage } from '../../helpers/error.helper';
 import { badRequest, internalServerError, ok } from '../../helpers/lambda.helper';
+import { log } from '../../helpers/logger';
 import { TrackService } from '../../service/track.service';
 import type { TrackListResponse } from '../../types/components';
 
@@ -26,8 +27,7 @@ export async function handler(event: APIGatewayEvent): Promise<ProxyResult> {
     }
     return ok(response);
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    log.error(`Error getting track list: ${errorMessage}`);
+    log.error(`Error getting track list: ${extractErrorMessage(err)}`);
     return internalServerError({ message: 'Error obtaining the track list' });
   }
 }

@@ -1,6 +1,7 @@
 import { type PartialSearchResult, SpotifyApi } from '@spotify/web-api-ts-sdk';
-import * as log from 'lambda-log';
 import { env } from '../config/env';
+import { extractErrorMessage } from '../helpers/error.helper';
+import { log } from '../helpers/logger';
 import { getSecretValue } from './secrets-manager';
 
 let spotifySecret: string | undefined;
@@ -16,8 +17,7 @@ export async function getSpotifyResults(
     const query = `track:${name.replace(' ', '-')} artist:${artist.replace(' ', '-')}`;
     return await sdk.search(query, ['track'], 'ES', 20);
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    log.error(`Error downloading from spotify: ${errorMessage} - ${name} / ${artist}`);
+    log.error(`Error downloading from spotify: ${extractErrorMessage(err)} - ${name} / ${artist}`);
     return undefined;
   }
 }

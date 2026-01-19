@@ -1,4 +1,5 @@
-import * as log from 'lambda-log';
+import { extractErrorMessage } from '../../helpers/error.helper';
+import { log } from '../../helpers/logger';
 import { DeviceService } from '../../service/device.service';
 import type { DeviceToken } from '../../types/components';
 
@@ -7,7 +8,6 @@ export async function handler({ type, token }: DeviceToken): Promise<void> {
   try {
     await deviceService.registerDevice(token, type);
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    log.error(`Error registering device: ${errorMessage}`);
+    log.error(`Error registering device: ${extractErrorMessage(err)}`);
   }
 }

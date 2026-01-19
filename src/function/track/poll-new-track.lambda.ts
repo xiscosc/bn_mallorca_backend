@@ -1,6 +1,7 @@
 import type { SQSEvent } from 'aws-lambda';
-import * as log from 'lambda-log';
+import { extractErrorMessage } from '../../helpers/error.helper';
 import { stringIsValid } from '../../helpers/lambda.helper';
+import { log } from '../../helpers/logger';
 import { TrackService } from '../../service/track.service';
 
 export async function handler(event: SQSEvent): Promise<void> {
@@ -18,7 +19,6 @@ export async function handler(event: SQSEvent): Promise<void> {
     log.info(`Has changed: ${hasChanged}`);
     if (hasChanged) await trackService.processTrack(track);
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    log.error(`Error processing Track: ${errorMessage}`);
+    log.error(`Error processing Track: ${extractErrorMessage(err)}`);
   }
 }

@@ -1,5 +1,5 @@
 import { IcecastReadableStream } from 'icecast-metadata-js';
-import * as log from 'lambda-log';
+import { log } from '../helpers/logger';
 import type { Track } from '../types/components';
 
 export async function getTrackFromMetadataStream(streamUrl?: string): Promise<Track | undefined> {

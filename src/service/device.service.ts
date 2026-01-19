@@ -7,9 +7,10 @@ import {
   type SubscribeCommandInput,
   UnsubscribeCommand,
 } from '@aws-sdk/client-sns';
-import * as log from 'lambda-log';
 import { DateTime } from 'luxon';
 import { env } from '../config/env';
+import { extractErrorMessage } from '../helpers/error.helper';
+import { log } from '../helpers/logger';
 import { getTs, getTsFromStart } from '../helpers/time.helper';
 import { DeviceRepository } from '../repository/device.repository';
 import type { DeviceDto } from '../types/components.dto';
@@ -42,7 +43,7 @@ export class DeviceService {
         token,
         type,
         status: DeviceStatus.ENABLED,
-        endopintArn: endpoint,
+        endpointArn: endpoint,
         subscriptionArn: subscription,
         subscribedAt: getTs(),
       };
@@ -70,7 +71,7 @@ export class DeviceService {
         this.deleteSubscription(d.subscriptionArn),
       );
       await Promise.all(deleteSubscriptionPromises);
-      const deleteEndpointPromises = devices.map((d) => this.deleteEndpoint(d.endopintArn));
+      const deleteEndpointPromises = devices.map((d) => this.deleteEndpoint(d.endpointArn));
       await Promise.all(deleteEndpointPromises);
       await this.deleteDevices(devices);
     }
@@ -93,7 +94,7 @@ export class DeviceService {
     try {
       await this.snsClient.send(new UnsubscribeCommand({ SubscriptionArn: arn }));
     } catch (e: unknown) {
-      log.error(`error deleting subscription ${arn} - ${e}`);
+      log.error(`error deleting subscription ${arn} - ${extractErrorMessage(e)}`);
     }
   }
 
@@ -101,7 +102,7 @@ export class DeviceService {
     try {
       await this.snsClient.send(new DeleteEndpointCommand({ EndpointArn: arn }));
     } catch (e: unknown) {
-      log.error(`error deleting endpoint ${arn} - ${e}`);
+      log.error(`error deleting endpoint ${arn} - ${extractErrorMessage(e)}`);
     }
   }
 

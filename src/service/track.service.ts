@@ -1,5 +1,5 @@
-import * as log from 'lambda-log';
 import { env } from '../config/env';
+import { log } from '../helpers/logger';
 import {
   cleanUnknownTrack,
   getTrackId,

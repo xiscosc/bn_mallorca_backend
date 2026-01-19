@@ -4,8 +4,9 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import type { SendMessageBatchRequestEntry } from '@aws-sdk/client-sqs/dist-types/models/models_0';
-import * as log from 'lambda-log';
 import { env } from '../../config/env';
+import { extractErrorMessage } from '../../helpers/error.helper';
+import { log } from '../../helpers/logger';
 
 export async function handler(event: unknown): Promise<void> {
   try {
@@ -18,8 +19,7 @@ export async function handler(event: unknown): Promise<void> {
     const client = new SQSClient({});
     await client.send(new SendMessageBatchCommand(input));
   } catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    log.error(`Error processing Track: ${errorMessage}`);
+    log.error(`Error processing Track: ${extractErrorMessage(err)}`);
   }
 }
 
