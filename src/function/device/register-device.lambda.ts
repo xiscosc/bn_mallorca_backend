@@ -6,8 +6,10 @@ import type { DeviceToken } from '../../types/components';
 const deviceService = new DeviceService();
 export async function handler({ type, token }: DeviceToken): Promise<void> {
   try {
-    await deviceService.registerDevice(token, type);
+    const result = await deviceService.registerDevice(token, type);
+    log.info(result, 'Registered device');
   } catch (err: unknown) {
-    log.error(`Error registering device: ${extractErrorMessage(err)}`);
+    log.error({ error: extractErrorMessage(err) }, 'Error registering device');
+    throw err;
   }
 }

@@ -8,15 +8,19 @@ import type { Track } from '../../types/components';
 const trackService = new TrackService();
 export async function handler(track?: Track): Promise<void> {
   if (track === undefined || !stringIsValid(track.artist) || !stringIsValid(track.name)) {
-    log.error(`Process track: Artist or name are invalid - ${JSON.stringify(track)}`);
+    log.error({ track }, 'Invalid track');
     throw new Error(`Process track: Artist or name are invalid - ${JSON.stringify(track)}`);
   }
 
   try {
     await trackService.processTrack(track);
+    log.info({ track: track.name, artist: track.artist }, 'Processed track');
   } catch (err: unknown) {
     const errorMessage = extractErrorMessage(err);
-    log.error(`Error processing Track: ${errorMessage} - ${JSON.stringify(track)}`);
+    log.error(
+      { track: track.name, artist: track.artist, error: errorMessage },
+      'Error processing track',
+    );
     throw new Error(`Error processing Track: ${errorMessage} - ${JSON.stringify(track)}`);
   }
 }

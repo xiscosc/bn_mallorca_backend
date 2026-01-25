@@ -10,6 +10,8 @@ import type { AlbumArtDto } from '../types/components.dto';
 
 export interface IAlbumCacheRequest {
   trackId: string;
+  trackName: string;
+  artist: string;
   albumArt: AlbumArt[];
 }
 
@@ -36,7 +38,12 @@ export class AlbumArtService {
 
     const spotifyAlbumArt = await AlbumArtService.getAlbumArtFromSpotify(track);
     if (spotifyAlbumArt.length > 0) {
-      const cacheRequest: IAlbumCacheRequest = { trackId: track.id!, albumArt: spotifyAlbumArt };
+      const cacheRequest: IAlbumCacheRequest = {
+        trackId: track.id!,
+        trackName: track.name,
+        artist: track.artist,
+        albumArt: spotifyAlbumArt,
+      };
       await triggerAsyncLambda(env.cacheLambdaArn, cacheRequest);
       return spotifyAlbumArt;
     }
@@ -44,9 +51,9 @@ export class AlbumArtService {
     return [];
   }
 
-  public async cacheAlbumArt({ trackId, albumArt }: IAlbumCacheRequest) {
+  public async cacheAlbumArt({ trackId, albumArt }: IAlbumCacheRequest): Promise<string[]> {
     if (albumArt.length === 0) {
-      return;
+      return [];
     }
 
     const results = await Promise.all(
@@ -58,10 +65,11 @@ export class AlbumArtService {
     });
 
     if (storedSizes.length === 0) {
-      return;
+      return [];
     }
 
     await this.albumArtRepository.addAlbumArt({ id: trackId, sizes: storedSizes });
+    return storedSizes;
   }
 
   private async getAlbumArtFromCache(trackId: string): Promise<AlbumArt[] | null> {

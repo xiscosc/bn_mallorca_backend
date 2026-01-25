@@ -8,18 +8,22 @@ import { env } from '../../config/env';
 import { extractErrorMessage } from '../../helpers/error.helper';
 import { log } from '../../helpers/logger';
 
-export async function handler(event: unknown): Promise<void> {
+export async function handler(_event: unknown): Promise<void> {
   try {
-    log.info(JSON.stringify(event));
     const input: SendMessageBatchCommandInput = {
       QueueUrl: env.pollQueueUrl,
       Entries: [5, 15, 25, 35, 45, 55].map((timeout) => generateMessage(timeout)),
     };
 
     const client = new SQSClient({});
-    await client.send(new SendMessageBatchCommand(input));
+    const result = await client.send(new SendMessageBatchCommand(input));
+    log.info(
+      { successful: result.Successful?.length ?? 0, failed: result.Failed?.length ?? 0 },
+      'Filled polling queue',
+    );
   } catch (err: unknown) {
-    log.error(`Error processing Track: ${extractErrorMessage(err)}`);
+    log.error({ error: extractErrorMessage(err) }, 'Error filling polling queue');
+    throw err;
   }
 }
 

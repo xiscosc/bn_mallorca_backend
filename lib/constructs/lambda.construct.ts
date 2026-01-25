@@ -11,7 +11,12 @@ import type { BnTopics } from './topic.construct';
 
 const FUNCTION_DIR = `${__dirname}/../../src/function`;
 
-function createLambda(scope: Construct, id: string, envName: string, props: NodejsFunctionProps): NodejsFunction {
+function createLambda(
+  scope: Construct,
+  id: string,
+  envName: string,
+  props: NodejsFunctionProps,
+): NodejsFunction {
   const lambda = new NodejsFunction(scope, id, {
     runtime: Runtime.NODEJS_24_X,
     architecture: Architecture.ARM_64,

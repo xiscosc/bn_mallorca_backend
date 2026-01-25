@@ -29,26 +29,30 @@ export class DeviceService {
     this.snsClient = new SNSClient({});
   }
 
-  public async registerDevice(token: string, type: string) {
+  public async registerDevice(
+    token: string,
+    type: string,
+  ): Promise<{ token: string; type: string; isNew: boolean }> {
     // Check if device is already registered
     const device = await this.repository.getDevice(token);
     if (device != null) {
       device.status = DeviceStatus.ENABLED;
       device.subscribedAt = getTs();
       await this.saveDevices([device]);
-    } else {
-      const endpoint = await this.createEndpoint(token, type);
-      const subscription = await this.createSubscription(endpoint);
-      const newDevice: DeviceDto = {
-        token,
-        type,
-        status: DeviceStatus.ENABLED,
-        endpointArn: endpoint,
-        subscriptionArn: subscription,
-        subscribedAt: getTs(),
-      };
-      await this.repository.putDevice(newDevice);
+      return { token, type, isNew: false };
     }
+    const endpoint = await this.createEndpoint(token, type);
+    const subscription = await this.createSubscription(endpoint);
+    const newDevice: DeviceDto = {
+      token,
+      type,
+      status: DeviceStatus.ENABLED,
+      endpointArn: endpoint,
+      subscriptionArn: subscription,
+      subscribedAt: getTs(),
+    };
+    await this.repository.putDevice(newDevice);
+    return { token, type, isNew: true };
   }
 
   public async unregisterDevice(token: string): Promise<{ token: string; disabled: boolean }> {
@@ -64,7 +68,7 @@ export class DeviceService {
     return { token, disabled: false };
   }
 
-  public async cleanDevices() {
+  public async cleanDevices(): Promise<string[]> {
     const devices = await this.repository.getDevicesByStatus(DeviceStatus.DISABLED, 35);
     if (devices.length > 0) {
       const deleteSubscriptionPromises = devices.map((d) =>
@@ -75,9 +79,10 @@ export class DeviceService {
       await Promise.all(deleteEndpointPromises);
       await this.deleteDevices(devices);
     }
+    return devices.map((d) => d.token);
   }
 
-  public async markUnactiveDevices() {
+  public async markUnactiveDevices(): Promise<string[]> {
     const startTs = getTsFromStart(DateTime.now().minus({ days: 1 }));
     const notRenewedDevices = await this.repository.getNotRenewedDevices(
       DeviceStatus.ENABLED,
@@ -88,6 +93,7 @@ export class DeviceService {
       status: DeviceStatus.DISABLED,
     }));
     await this.saveDevices(notRenewedDevicesWithStatus);
+    return notRenewedDevices.map((d) => d.token);
   }
 
   private async deleteSubscription(arn: string) {
