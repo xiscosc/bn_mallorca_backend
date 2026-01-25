@@ -21,7 +21,7 @@ Backend and infrastructure for the BN Mallorca Radio App.
 ## Project Structure
 
 ```
-bn_mallorca_backend/
+bnmallorca-backend/
 ├── bin/                    # CDK app entry point
 ├── lib/                    # CDK infrastructure code
 │   └── constructs/         # CDK constructs
