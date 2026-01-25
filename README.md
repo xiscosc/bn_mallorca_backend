@@ -1,4 +1,4 @@
-# BN Mallorca ![staging](https://github.com/xiscosc/bn_mallorca_backend/actions/workflows/deploy-staging.yml/badge.svg) ![prod](https://github.com/xiscosc/bn_mallorca_backend/actions/workflows/deploy-prod.yml/badge.svg)
+# BN Mallorca [![staging](https://github.com/xiscosc/bn_mallorca_backend/actions/workflows/deploy-staging.yml/badge.svg)](https://github.com/xiscosc/bn_mallorca_backend/actions/workflows/deploy-staging.yml) [![prod](https://github.com/xiscosc/bn_mallorca_backend/actions/workflows/deploy-prod.yml/badge.svg)](https://github.com/xiscosc/bn_mallorca_backend/actions/workflows/deploy-prod.yml)
 
 Backend and infrastructure for the BN Mallorca Radio App.
 
