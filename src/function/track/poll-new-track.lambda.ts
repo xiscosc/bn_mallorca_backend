@@ -16,8 +16,13 @@ export async function handler(_event: SQSEvent): Promise<void> {
     const hasChanged = await trackService.trackHasChanged(track);
     if (hasChanged) {
       await trackService.processTrack(track);
+      log.info({ trackId: track.id, track: track.name, artist: track.artist }, 'Processed track');
+    } else {
+      log.info(
+        { trackId: track.id, track: track.name, artist: track.artist },
+        'Track has not changed',
+      );
     }
-    log.info({ track: track.name, artist: track.artist, processed: hasChanged }, 'Polled track');
   } catch (err: unknown) {
     log.error({ error: extractErrorMessage(err) }, 'Error polling track');
     throw err;

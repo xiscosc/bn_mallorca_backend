@@ -22,7 +22,10 @@ export async function handler({
       artist,
       albumArt,
     });
-    log.info({ track: trackName, artist, cached: storedSizes.length > 0 }, 'Cached album art');
+    log.info(
+      { trackId, track: trackName, artist, cached: storedSizes.length > 0 },
+      'Cached album art',
+    );
   } catch (err: unknown) {
     const errorMessage = extractErrorMessage(err);
     log.error({ trackId, error: errorMessage }, 'Error caching track album art');
