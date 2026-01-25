@@ -1,4 +1,5 @@
 import { env } from '../config/env';
+import { log } from '../helpers/logger';
 import { findArtistInSpotifyTracks, isBNTrack } from '../helpers/track.helper';
 import { albumArtUrlToBuffer } from '../net/album-art.downloader';
 import { triggerAsyncLambda } from '../net/lambda';
@@ -24,15 +25,27 @@ export class AlbumArtService {
 
   public async getAlbumArt(track: Track, onlyCache: boolean = false): Promise<AlbumArt[]> {
     if (isBNTrack(track)) {
+      log.info(
+        { trackId: track.id, track: track.name, artist: track.artist, source: 'bn_track' },
+        'Skipped album art',
+      );
       return [];
     }
 
     const cachedAlbumArt = await this.getAlbumArtFromCache(track.id!);
     if (cachedAlbumArt) {
+      log.info(
+        { trackId: track.id, track: track.name, artist: track.artist, source: 'cache' },
+        'Got album art',
+      );
       return cachedAlbumArt;
     }
 
     if (onlyCache) {
+      log.info(
+        { trackId: track.id, track: track.name, artist: track.artist, source: 'cache_miss' },
+        'No album art',
+      );
       return [];
     }
 
@@ -45,9 +58,23 @@ export class AlbumArtService {
         albumArt: spotifyAlbumArt,
       };
       await triggerAsyncLambda(env.cacheLambdaArn, cacheRequest);
+      log.info(
+        {
+          trackId: track.id,
+          track: track.name,
+          artist: track.artist,
+          source: 'spotify',
+          cacheLambdaTriggered: true,
+        },
+        'Got album art',
+      );
       return spotifyAlbumArt;
     }
 
+    log.info(
+      { trackId: track.id, track: track.name, artist: track.artist, source: 'not_found' },
+      'No album art',
+    );
     return [];
   }
 

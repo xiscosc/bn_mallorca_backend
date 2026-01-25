@@ -4,7 +4,7 @@ import type { Track } from '../types/components';
 
 export async function getTrackFromMetadataStream(streamUrl?: string): Promise<Track | undefined> {
   if (!streamUrl) {
-    log.warn('Stream URL is not set');
+    log.warn({ streamUrl }, 'Stream URL is not set');
     return undefined;
   }
 
@@ -28,7 +28,12 @@ export async function getTrackFromMetadataStream(streamUrl?: string): Promise<Tr
         onMetadata: ({ metadata }) => {
           clearTimeout(timeoutId);
           controller.abort();
-          resolve(parseMetadata(metadata.StreamTitle));
+          const track = parseMetadata(metadata.StreamTitle);
+          log.info(
+            { track: track?.name, artist: track?.artist, found: !!track },
+            'Got track from metadata stream',
+          );
+          resolve(track);
         },
       });
 

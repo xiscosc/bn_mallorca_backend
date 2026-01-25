@@ -11,8 +11,10 @@ export async function getCurrentTrackFromCentova(): Promise<Track | undefined> {
   const data = (await response.json()) as CentovaResponse;
   const centovaTrack = data.data[0]?.[0];
   if (!centovaTrack) {
-    log.warn('No track data available from Centova');
+    log.warn({ url: env.centovaUrl }, 'No track data available from Centova');
     return undefined;
   }
-  return { artist: centovaTrack.artist, name: centovaTrack.title };
+  const track = { artist: centovaTrack.artist, name: centovaTrack.title };
+  log.info({ track: track.name, artist: track.artist }, 'Got track from Centova');
+  return track;
 }

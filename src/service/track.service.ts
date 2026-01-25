@@ -27,15 +27,20 @@ export class TrackService {
   }
 
   public static async getCurrentTrack(): Promise<Track | undefined> {
-    log.info(`Getting current track from ${env.trackSource}`);
+    log.info({ source: env.trackSource }, 'Getting current track');
+    let track: Track | undefined;
     switch (env.trackSource) {
       case TrackSource.CENTOVA:
-        return await getCurrentTrackFromCentova();
+        track = await getCurrentTrackFromCentova();
+        break;
       case TrackSource.CENTOVA_METADATA:
-        return await TrackService.getTrackFromMetadataStream(env.centovaStreamUrl);
+        track = await TrackService.getTrackFromMetadataStream(env.centovaStreamUrl);
+        break;
       default:
-        return undefined;
+        track = undefined;
     }
+    log.info({ track: track?.name, artist: track?.artist, found: !!track }, 'Got current track');
+    return track;
   }
 
   public static filterOutAds(trackList: TrackList): TrackList {
@@ -124,7 +129,7 @@ export class TrackService {
       return metadataTrack;
     }
 
-    log.warn('No track found in metadata stream, getting track from Centova');
+    log.warn({ streamUrl }, 'No track found in metadata stream, falling back to Centova');
     return getCurrentTrackFromCentova();
   }
 }
