@@ -28,7 +28,7 @@ export function createTriggers(
     cleaningEventRule.addTarget(new LambdaFunction(deleteDevicesLambda));
 
     const findDisabledDevicesRule = new Rule(scope, `${envName}-findDisabledDevicesRule`, {
-      schedule: Schedule.cron({ minute: '0', hour: '3' }),
+      schedule: Schedule.cron({ minute: '5', hour: '*' }),
     });
     findDisabledDevicesRule.addTarget(new LambdaFunction(findDisabledDevicesLambda));
   }
