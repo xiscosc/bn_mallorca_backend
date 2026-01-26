@@ -9,21 +9,6 @@ import { env } from '../config/env';
 import type { DeviceDto } from '../types/components.dto';
 import { DynamoRepository } from './dynamo-repository';
 
-// Legacy records in DynamoDB have a typo: "endopintArn" instead of "endpointArn".
-// This type and normalizeDevice function handle both field names for backwards compatibility.
-type LegacyDeviceRecord = Omit<DeviceDto, 'endpointArn'> & {
-  endpointArn?: string;
-  endopintArn?: string;
-};
-
-function normalizeDevice(record: LegacyDeviceRecord): DeviceDto {
-  const { endopintArn, ...rest } = record;
-  return {
-    ...rest,
-    endpointArn: record.endpointArn ?? endopintArn ?? '',
-  };
-}
-
 export class DeviceRepository extends DynamoRepository<DeviceDto> {
   constructor() {
     super(env.deviceTable);
@@ -37,7 +22,7 @@ export class DeviceRepository extends DynamoRepository<DeviceDto> {
 
     const result = await this.client.send(new GetCommand(input));
     if (!result?.Item) return undefined;
-    return normalizeDevice(result.Item as LegacyDeviceRecord);
+    return result.Item as DeviceDto;
   }
 
   public async putDevice(device: DeviceDto) {
@@ -49,14 +34,13 @@ export class DeviceRepository extends DynamoRepository<DeviceDto> {
   }
 
   public async getDevicesByStatus(status: number, limit?: number): Promise<DeviceDto[]> {
-    const records = await this.getBySecondaryIndexWithSortKey(
+    return this.getBySecondaryIndexWithSortKey(
       'statusSubscribedAtIndex',
       'status',
       status,
       true,
       limit,
     );
-    return (records as LegacyDeviceRecord[]).map(normalizeDevice);
   }
 
   public async getNotRenewedDevices(status: number, ts: number): Promise<DeviceDto[]> {
@@ -75,8 +59,7 @@ export class DeviceRepository extends DynamoRepository<DeviceDto> {
     };
 
     const data = await this.client.send(new QueryCommand(params));
-    const records = (data.Items as LegacyDeviceRecord[]) ?? [];
-    return records.map(normalizeDevice);
+    return (data.Items as DeviceDto[]) ?? [];
   }
 
   public async deleteDevices(tokens: string[]) {
